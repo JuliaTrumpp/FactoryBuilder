@@ -131,10 +131,11 @@ const setupLoader = (): void => {
   loader = new GLTFLoader()
 }
 
-const setupStompClientBuilder = (): void => {
-  stompClientBuilder.value = new StompClientBuilder(factoryID.value);
-  stompClientBuilder.value.activate();
-
+const setupStompClientBuilder = (): void => { // = startQuizLiveUpdate()
+  if(stompClientBuilder.value == null) {
+    stompClientBuilder.value = new StompClientBuilder(factoryID.value);
+    stompClientBuilder.value.activate();
+  }
 }
 
 
@@ -205,12 +206,6 @@ const onChangeEntityClicked = (situation: string): void => {
           scene.remove(currentObjectSelected)
           //if (currentObjectSelected.parent.type !== 'Scene')
           //scene.remove(currentObjectSelected.parent)
-
-
-          // hier updaten also stomp bescheid sagen nicht hier sondern im BE
-
-
-
         }
       }).catch((error: Error) => {
         console.error("An error occurred during entity deletion:", error)
@@ -542,6 +537,20 @@ watch(currentCameraMode, () => {
 
   console.log(highlight)
 })
+
+// muss hier die updateFactoryEntities-Methode hin? in einem Watcher?
+
+// callback = function (message) {
+//   // called when the client receives a STOMP message from the server
+//   if (message.body) {
+//     alert('got message with body ' + message.body);
+//     // message.body als IFrontendMessage interpretieren und dann Backend damit abfragen wo/ wie dieses Entity jetzt sitzt
+//   } else {
+//     alert('got empty message');
+//   }
+// };
+
+
 
 /**
  * Gamecycle

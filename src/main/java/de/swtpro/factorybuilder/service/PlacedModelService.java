@@ -41,7 +41,6 @@ public class PlacedModelService {
         frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, placedModel.getId(), MessageOperationType.UPDATE), placedModel.getFactoryID());
 
 
-
         return placedModelRepository.save(placedModel);
     }
 

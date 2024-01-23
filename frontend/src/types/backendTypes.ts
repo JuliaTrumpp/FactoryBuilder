@@ -1,3 +1,5 @@
+import type { LoadingManager } from "three";
+
 export interface IBackendEntity {
     x: number;
     y: number;
@@ -98,4 +100,10 @@ export interface IUserForm{
 export interface ILoginForm{
     username: string;
     password: string;
+}
+
+export interface IFrontendMessageEvent{
+    messageEventtype: string; 
+    eventId: number; 
+    messageOperationtype: string; 
 }
