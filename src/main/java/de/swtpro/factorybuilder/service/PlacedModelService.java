@@ -1,6 +1,10 @@
 package de.swtpro.factorybuilder.service;
 
 import de.swtpro.factorybuilder.entity.*;
+import de.swtpro.factorybuilder.messaging.FrontendMessageEvent;
+import de.swtpro.factorybuilder.messaging.FrontendMessageService;
+import de.swtpro.factorybuilder.messaging.FrontendMessageEvent.MessageEventType;
+import de.swtpro.factorybuilder.messaging.FrontendMessageEvent.MessageOperationType;
 import de.swtpro.factorybuilder.repository.FactoryRepository;
 import de.swtpro.factorybuilder.repository.PlacedModelRepository;
 import de.swtpro.factorybuilder.utility.Position;
@@ -13,6 +17,7 @@ import java.util.Optional;
 @Service
 public class PlacedModelService {
     PlacedModelRepository placedModelRepository;
+    FrontendMessageService frontendMessageService;
 
     FactoryRepository factoryRepository;
     FieldService fieldService;
@@ -30,6 +35,13 @@ public class PlacedModelService {
 
     private PlacedModel placeModelIntoField(PlacedModel placedModel, Field field) {
         field.setPlacedModel(placedModel);
+
+
+        // Stomp bescheid sagen
+        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, placedModel.getId(), MessageOperationType.UPDATE), placedModel.getFactoryID());
+
+
+
         return placedModelRepository.save(placedModel);
     }
 
