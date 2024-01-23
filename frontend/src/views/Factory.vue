@@ -62,6 +62,7 @@ const factorySize: Ref<IVector3> = useFactory().factorySize
 const factoryID: Ref<number> = useFactory().factoryID
 const factoryName: Ref<string> = useFactory().factoryName
 const currentCameraMode: Ref<CameraMode | null> = ref(CameraMode.ORBIT)
+const stompClientBuilder: Ref<StompClientBuilder | null> = ref(null)
 
 /**
  * Variables
@@ -130,12 +131,11 @@ const setupLoader = (): void => {
   loader = new GLTFLoader()
 }
 
+const setupStompClientBuilder = (): void => {
+  stompClientBuilder.value = new StompClientBuilder(factoryID.value);
+  stompClientBuilder.value.activate();
 
-
-// stomp message ding StompClientBuilder subscriben  // mach diese in onMounted
-const stompClientBuilder = new StompClientBuilder(factoryID.value);
-stompClientBuilder.activate();
-
+}
 
 
 /**
@@ -624,6 +624,7 @@ const init = () => {
   setupLights()
   setupControls()
   setupLoader()
+  setupStompClientBuilder()
   createRoom(factorySize.value.x, factorySize.value.y, factorySize.value.z, scene)
 }
 

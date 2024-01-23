@@ -9,28 +9,33 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
 @Service
 public class PlacedModelService {
     PlacedModelRepository placedModelRepository;
 
     FactoryRepository factoryRepository;
     FieldService fieldService;
-    PlacedModelService(PlacedModelRepository placedModelRepository, FieldService fieldService, FactoryRepository factoryRepository){
+
+    PlacedModelService(PlacedModelRepository placedModelRepository, FieldService fieldService,
+            FactoryRepository factoryRepository) {
         this.placedModelRepository = placedModelRepository;
         this.fieldService = fieldService;
         this.factoryRepository = factoryRepository;
     }
+
     public Optional<PlacedModel> getPlacedModelById(long id) {
         return placedModelRepository.findById(id);
     }
+
     private PlacedModel placeModelIntoField(PlacedModel placedModel, Field field) {
         field.setPlacedModel(placedModel);
         return placedModelRepository.save(placedModel);
     }
+
     public PlacedModel createPlacedModel(Model model, Position rootPosition, long factoryID) {
         // TODO get in and outputs from frontend
         // return checkForPlacement(m);
-
 
         Factory factory = factoryRepository.findById(factoryID).orElseThrow();
 
@@ -39,21 +44,25 @@ public class PlacedModelService {
 
         return placedModelRepository.save(placedModel);
     }
+
     public List<PlacedModel> findAllByFactoryId(Factory factory) {
         return placedModelRepository.findByFactory(factory);
     }
+
     private void putModelOnField(PlacedModel placedModel, Position rootPosition) {
         // TODO: create model from input of frontend
-//        if (checkForPlacement(new PlacedModel())) {
-//            // todo place it on the field and call placeModelIntoField(to refresh the
-//            // database
-//            // also answer frontend
-//        }
+        // if (checkForPlacement(new PlacedModel())) {
+        // // todo place it on the field and call placeModelIntoField(to refresh the
+        // // database
+        // // also answer frontend
+        // }
     }
+
     private void removeModelFromField(Field field) {
         field.setPlacedModel(null);
         // Todo: switch repository entry
     }
+
     private boolean checkField(Field f, PlacedModel thisModel, String ori, Factory factory) {
         boolean condition = false;
         String counterOri = "";
@@ -130,6 +139,7 @@ public class PlacedModelService {
         }
         return true;
     }
+
     private boolean checkForPlacement(PlacedModel thisModel, Factory factory) {
         // check if fields are free
         for (Field f : thisModel.getPlacedFields()) {
@@ -187,9 +197,11 @@ public class PlacedModelService {
             return true;
         }
 
-        //TODO pruefe ob die gedregte version an die stelle passt ansonsten passe dies an mit vince klären
+        // TODO pruefe ob die gedregte version an die stelle passt ansonsten passe dies
+        // an mit vince klären
         return false;
     }
+
     private Position adjustPosition(PlacedModel thisModel, Position newPosition, Position tmpPos) {
         int tmpValue = tmpPos.getX() - thisModel.getRootPos().getX();
         tmpPos.setX(tmpPos.getY() - thisModel.getRootPos().getY() + newPosition.getX());
@@ -207,6 +219,7 @@ public class PlacedModelService {
             default -> "";
         };
     }
+
     public boolean removeModelFromFactory(long placedModelID) {
         // TODO: placedModelID to String (UUID from frontend) NULL HANDLING
         PlacedModel placedModel = getPlacedModelById(placedModelID).orElse(null);
@@ -223,10 +236,12 @@ public class PlacedModelService {
         // hard coded for skeleton round-trip
         return true;
     }
+
     public boolean moveModel(long modelID, Position newRootPosition) {
         PlacedModel placedModel = getPlacedModelById(modelID).orElse(null);
-        if (placedModel == null) return false;
-        for (Field f: placedModel.getPlacedFields()) {
+        if (placedModel == null)
+            return false;
+        for (Field f : placedModel.getPlacedFields()) {
             f.setPlacedModel(null);
         }
         // TODO: change position to new Position
