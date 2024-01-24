@@ -3,8 +3,11 @@ package de.swtpro.factorybuilder.controller;
 
 import de.swtpro.factorybuilder.DTO.entity.MoveRequestDTO;
 import de.swtpro.factorybuilder.DTO.entity.PlaceRequestDTO;
+import de.swtpro.factorybuilder.DTO.entity.PlacedModelDTO;
 import de.swtpro.factorybuilder.DTO.entity.RotateRequestDTO;
 import de.swtpro.factorybuilder.DTO.factory.DeleteRequestDTO;
+import de.swtpro.factorybuilder.DTO.factory.FactoryEnterDTO;
+import de.swtpro.factorybuilder.entity.Factory;
 import de.swtpro.factorybuilder.entity.Model;
 import de.swtpro.factorybuilder.entity.PlacedModel;
 import de.swtpro.factorybuilder.service.FactoryService;
@@ -18,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -85,6 +89,35 @@ public class EntityRestAPIController {
     public List<Model> getAll() {
         return modelService.getAllByTypes(ModelType.MACHINE, ModelType.TRANSPORT, ModelType.OTHER,
                 ModelType.ITEM_PROCESSED, ModelType.ITEM_RESOURCE, ModelType.ITEM_PRODUCT);
+    }
+
+    @CrossOrigin
+    @GetMapping("/get/' + {entityId}")
+    public PlacedModelDTO getPlacedEntity(@PathVariable long entityId) {
+        try {
+            PlacedModel placedModel = placedModelService.getPlacedModelById(entityId).orElseThrow();
+            Model m = modelService.getByID(placedModel.getModelId()).orElse(null);
+
+            assert placedModel != null;
+            PlacedModelDTO dto = new PlacedModelDTO(
+                    placedModel.getFactoryID(),
+                    placedModel.getId(),
+                    placedModel.getOrientation(),
+                    placedModel.getRootPos().getX(),
+                    placedModel.getRootPos().getY(),
+                    placedModel.getRootPos().getZ(),
+                    m.getModelFile(), // Füge den Pfad hinzu, wie erforderlich (? Kommentar von getAll in factoryAPI übernommen)
+                    m.getName()
+                    // hier muss wenn script branch gemerged ist, noch placedModel.getScript() hin -> DTO abändern...
+                    // -> an jeder anderen Stelle wo Entities aus BE geholt werden z.B auch getAll(), load() etc.
+            );
+            
+            return dto;
+        } catch(Exception e) {
+            LOGGER.info("Fehler beim Laden des Entitys aus dem BE, um dieses im FE zu aktualisieren");
+        }
+        
+        return null;
     }
 
 }

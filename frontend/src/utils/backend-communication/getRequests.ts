@@ -9,8 +9,8 @@ export const getAllEntitiesInFactory: (factoryId: number) => Promise<IBackendEnt
   return fetch(backendUrl + '/api/factory/getAll/' + factoryId).then((res) => res.json())
 }
 
-export const getEntityInFactory: (entityId: number) => Promise<IBackendEntity[]> = async (entityId: number) => {
-  return fetch(backendUrl + '/api/factory/get/' + entityId).then((res) => res.json())
+export const getEntityInFactory: (entityId: number) => Promise<IBackendEntity> = async (entityId: number) => {
+  return fetch(backendUrl + '/api/entity/get/' + entityId).then((res) => res.json())
 }
 
 export const getAllFactories = async () => {

@@ -1,4 +1,5 @@
-import type { IFrontendMessageEvent } from "@/types/backendTypes";
+import type { IFrontendMessageEvent, IBackendEntity } from "@/types/backendTypes";
+import { getEntityInFactory } from "@/utils/backend-communication/getRequests";
 import type {IMessage} from "@stomp/stompjs"
 import {Client} from '@stomp/stompjs'
 
@@ -27,15 +28,32 @@ class StompClientBuilder {
         });
     }
 
-    private subscribeToTopic(factoryID: number): void {      // war auf private eingentlich
+    private subscribeToTopic(factoryID: number): void {      
         this.client.subscribe("/info/factory/" + factoryID, (message: IMessage) => {
             console.log('Received:', message.body);
 
-            // const receivedMessageFromBackend : IFrontendMessageEvent =  message.body;
-            
-            // hier bekommt man die Message aus dem Backend und 
-            // fetch aufruf 
-            // getEntityInFactory(receivedMessageFromBackend.eventId);
+            // eigentlich besser cooler, wenn man die empfangene Message als IFrontendMessageEvent json interpretieren kann
+            const splittedMessage = message.body.split(" ");
+            if(splittedMessage.length > 4) {
+                const messageEventTypeString = splittedMessage[2];
+                const eventIdString = splittedMessage[3];
+                const messageOperationtype = splittedMessage[4];
+
+                const receivedMessageFromBackend : IFrontendMessageEvent = {messageEventtype: messageEventTypeString, eventId: Number(eventIdString), messageOperationtype:messageOperationtype}; 
+                
+                getEntityInFactory(receivedMessageFromBackend.eventId).then((changedPlacedModel: IBackendEntity) => {
+                    
+                    
+                                if(receivedMessageFromBackend.messageOperationtype == "UPDATE") { 
+                                    // dieses Entity neu laden und im FE setzen (es wurde verschoben/ rotiert/ etc wurde)
+                                    // changedPlacedModel benutzen
+                                } else if(receivedMessageFromBackend.messageOperationtype == "DELETE") { 
+                                    // dieses Entity im FE löschen 
+                                    // changedPlacedModel benutzen
+                                }
+                });
+            }
+             
         });
     }
 
