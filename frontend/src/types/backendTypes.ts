@@ -102,7 +102,7 @@ export interface ILoginForm{
     password: string;
 }
 
-export interface IFrontendMessageEvent{
+export interface IBackendMessageEvent{
     messageEventtype: string; 
     eventId: number; 
     messageOperationtype: string; 

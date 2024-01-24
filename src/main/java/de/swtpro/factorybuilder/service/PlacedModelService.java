@@ -49,8 +49,8 @@ public class PlacedModelService {
         // TODO placed model befüllen
 
 
-        // Stomp bescheid sagen
-        // frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, placedModel.getId(), MessageOperationType.UPDATE), placedModel.getFactoryID());
+        // Stomp bescheid sagen (hier auskommentiert weil sonst schmiert diese ab)
+        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, placedModel.getId(), MessageOperationType.UPDATE), placedModel.getFactoryID());
 
         return placedModelRepository.save(placedModel);
     }
