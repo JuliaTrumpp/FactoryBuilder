@@ -420,8 +420,11 @@ const handleClick = (event: any) => {
           modelId: activeEntity.value.name,
           factoryID: factoryID.value
         })
-            .then((response) => response.json())
+            .then((response) => {
+              console.log(response)
+              return response.json()})
             .then((id) => {
+              console.log("Alter EY: ", id)
               if (id === -1) return
               if (activeEntity.value) {
                 placeEntity(

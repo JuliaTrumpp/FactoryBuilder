@@ -35,17 +35,17 @@ class StompClientBuilder {
     this.client.subscribe('/info/factory/' + factoryID, (message: IMessage) => {
       console.log('Received:', message.body)
 
-      const backendMessageEvent: IBackendMessageEvent = JSON.parse(message.body)
+    //   const backendMessageEvent: IBackendMessageEvent = JSON.parse(message.body)
 
-      getEntityInFactory(backendMessageEvent.eventId).then((changedPlacedModel: IBackendEntity) => {
-        if (backendMessageEvent.messageOperationtype == 'UPDATE') {
-          // dieses Entity neu laden und im FE setzen (es wurde verschoben/ rotiert/ etc wurde)
-          // changedPlacedModel benutzen
-        } else if (backendMessageEvent.messageOperationtype == 'DELETE') {
-          // dieses Entity im FE löschen
-          // changedPlacedModel benutzen
-        }
-      })
+    //   getEntityInFactory(backendMessageEvent.eventId).then((changedPlacedModel: IBackendEntity) => {
+    //     if (backendMessageEvent.messageOperationtype == 'UPDATE') {
+    //       // dieses Entity neu laden und im FE setzen (es wurde verschoben/ rotiert/ etc wurde)
+    //       // changedPlacedModel benutzen
+    //     } else if (backendMessageEvent.messageOperationtype == 'DELETE') {
+    //       // dieses Entity im FE löschen
+    //       // changedPlacedModel benutzen
+    //     }
+    //   })
       // }
     })
   }

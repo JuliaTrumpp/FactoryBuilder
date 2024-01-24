@@ -9,6 +9,10 @@ import de.swtpro.factorybuilder.DTO.factory.FactoryEnterDTO;
 import de.swtpro.factorybuilder.entity.Factory;
 import de.swtpro.factorybuilder.entity.Model;
 import de.swtpro.factorybuilder.entity.PlacedModel;
+import de.swtpro.factorybuilder.messaging.FrontendMessageEvent;
+import de.swtpro.factorybuilder.messaging.FrontendMessageEvent.MessageEventType;
+import de.swtpro.factorybuilder.messaging.FrontendMessageEvent.MessageOperationType;
+import de.swtpro.factorybuilder.messaging.FrontendMessageService;
 import de.swtpro.factorybuilder.service.FactoryService;
 
 import de.swtpro.factorybuilder.service.ModelService;
@@ -31,6 +35,8 @@ public class EntityRestAPIController {
     ModelService modelService;
     FactoryService factoryService;
     PlacedModelService placedModelService;
+        FrontendMessageService frontendMessageService;
+
 
     EntityRestAPIController(ModelService modelService, FactoryService factoryService,
             PlacedModelService placedModelService) {
@@ -47,6 +53,9 @@ public class EntityRestAPIController {
         Model model = modelService.getByName(placeRequestDTO.modelId()).orElseThrow();
         PlacedModel placedModel = placedModelService.createPlacedModel(model, pos, placeRequestDTO.factoryID());
 
+        // frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, placedModel.getId(), MessageOperationType.UPDATE), placedModel.getFactoryID());
+
+
         LOGGER.info(placedModel.toString());
 
         // Entity wir in Datenbank erzeugt, und id wird gesendet
@@ -57,6 +66,7 @@ public class EntityRestAPIController {
     @PostMapping("/delete")
     public ResponseEntity<Boolean> delete(@RequestBody DeleteRequestDTO deleteRequestDTO) {
         boolean deleted = placedModelService.removeModelFromFactory(deleteRequestDTO.id());
+        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, deleteRequestDTO.id(), MessageOperationType.DELETE), deleteRequestDTO.factoryId());
         return ResponseEntity.ok(deleted);
     }
 
@@ -73,6 +83,7 @@ public class EntityRestAPIController {
         // String.valueOf(rotated));
 
         LOGGER.info(rotateRequestDTO.toString());
+        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, rotateRequestDTO.id(), MessageOperationType.UPDATE), rotateRequestDTO.factoryID());
         return ResponseEntity.ok(true);
     }
 
@@ -83,6 +94,7 @@ public class EntityRestAPIController {
         boolean moved = placedModelService.moveModel(moveRequestDTO.id(), pos);
         LOGGER.info(moveRequestDTO.toString());
         LOGGER.info("move entity: " + moveRequestDTO.id() + moved);
+        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, moveRequestDTO.id(), MessageOperationType.UPDATE), moveRequestDTO.factoryId());
         return ResponseEntity.ok(true);
     }
 

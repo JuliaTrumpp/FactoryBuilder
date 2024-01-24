@@ -48,10 +48,6 @@ public class PlacedModelService {
         PlacedModel placedModel = new PlacedModel(factory, rootPosition, model);
         // TODO placed model befüllen
 
-
-        // Stomp bescheid sagen (hier auskommentiert weil sonst schmiert diese ab)
-        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, placedModel.getId(), MessageOperationType.UPDATE), placedModel.getFactoryID());
-
         return placedModelRepository.save(placedModel);
     }
 
@@ -205,10 +201,6 @@ public class PlacedModelService {
                 placeModelIntoField(thisModel, f);
             }
 
-        // Stomp bescheid sagen
-        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, thisModel.getId(), MessageOperationType.UPDATE), thisModel.getFactoryID());
-
-
             return true;
         }
 
@@ -249,10 +241,6 @@ public class PlacedModelService {
         }
         // non valid delete from repository -> reinitialize fields and return false
         // hard coded for skeleton round-trip
-
-        // Stomp bescheid sagen
-        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, placedModel.getId(), MessageOperationType.DELETE), placedModel.getFactoryID());
-
         return true;
     }
 
@@ -267,10 +255,6 @@ public class PlacedModelService {
         // placeMachineToField(machine,newPos);
         // Todo: which informations are needed for this operatino?
         // Todo: switch fields and machine repos
-
-        // Stomp bescheid sagen
-        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, placedModel.getId(), MessageOperationType.UPDATE), placedModel.getFactoryID());
-
 
         return true;
     }
