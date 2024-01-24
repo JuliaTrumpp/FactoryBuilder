@@ -638,6 +638,14 @@ const animate = (timestamp: any) => {
   ccm.update(deltaTime)
   renderer.render(scene, camera)
 }
+
+export const stompRemoveEntity = (tmp: number) => { // hier modelDasRemovedWerdenSoll mitgeben
+  const modelDasRemovedWerdenSoll = null;// diese überschreiben
+  delete allPlacedEntities[3] // hier die id von modelDasRemovedWerdenSoll
+  //scene.remove(modelDasRemovedWerdenSoll)
+}
+
+
 init()
 </script>
 

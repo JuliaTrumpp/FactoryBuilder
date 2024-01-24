@@ -35,14 +35,15 @@ public class EntityRestAPIController {
     ModelService modelService;
     FactoryService factoryService;
     PlacedModelService placedModelService;
-        FrontendMessageService frontendMessageService;
+    FrontendMessageService frontendMessageService;
 
 
     EntityRestAPIController(ModelService modelService, FactoryService factoryService,
-            PlacedModelService placedModelService) {
+            PlacedModelService placedModelService, FrontendMessageService frontendMessageService) {
         this.modelService = modelService;
         this.factoryService = factoryService;
         this.placedModelService = placedModelService;
+        this.frontendMessageService = frontendMessageService;
     }
 
     @CrossOrigin
@@ -53,7 +54,7 @@ public class EntityRestAPIController {
         Model model = modelService.getByName(placeRequestDTO.modelId()).orElseThrow();
         PlacedModel placedModel = placedModelService.createPlacedModel(model, pos, placeRequestDTO.factoryID());
 
-        // frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, placedModel.getId(), MessageOperationType.UPDATE), placedModel.getFactoryID());
+        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, placedModel.getId(), MessageOperationType.UPDATE), placedModel.getFactoryID());
 
 
         LOGGER.info(placedModel.toString());
