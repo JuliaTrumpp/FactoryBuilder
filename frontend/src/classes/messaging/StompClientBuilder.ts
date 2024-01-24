@@ -1,3 +1,4 @@
+import type { IFrontendMessageEvent } from "@/types/backendTypes";
 import type {IMessage} from "@stomp/stompjs"
 import {Client} from '@stomp/stompjs'
 
@@ -29,6 +30,12 @@ class StompClientBuilder {
     private subscribeToTopic(factoryID: number): void {      // war auf private eingentlich
         this.client.subscribe("/info/factory/" + factoryID, (message: IMessage) => {
             console.log('Received:', message.body);
+
+            // const receivedMessageFromBackend : IFrontendMessageEvent =  message.body;
+            
+            // hier bekommt man die Message aus dem Backend und 
+            // fetch aufruf 
+            // getEntityInFactory(receivedMessageFromBackend.eventId);
         });
     }
 
