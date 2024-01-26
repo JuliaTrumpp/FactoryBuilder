@@ -1,5 +1,5 @@
 import { getCenterPoint } from '@/utils/rotation/rotate'
-import { drawBox, drawLine } from '@/utils/threeJS/helpFunctions';
+import { drawBox, drawLine, roundVector } from '@/utils/threeJS/helpFunctions';
 import * as THREE from 'three'
 
 /**
@@ -116,19 +116,21 @@ export class PlacedEntities {
       let currentEndPoint = this.getPointsFromStraightSinglePipe(currentPipe).endPoint.clone()
       let isPartOfBiggerPipe = false
 
+      console.log(currentStartPoint, "before")
       
-      // console.log(currentEndPoint, "rounded to", roundVector(currentEndPoint))
-      // console.log(currentStartPoint, "rounded to",roundVector(currentEndPoint))
+
+      drawLine(roundVector(currentStartPoint),roundVector(currentStartPoint), this.sceneRef)
+      drawLine(roundVector(currentEndPoint),roundVector(currentEndPoint), this.sceneRef)
       out.forEach((wholePipe) => {
 
-        if (currentStartPoint.clone().round().equals(wholePipe.endPoint.clone().round())) {
+        if (roundVector(currentStartPoint).equals(roundVector(wholePipe.endPoint))) {
           // Nachbar links gefunden
           wholePipe.endPoint = currentEndPoint
           wholePipe.pipeCount++
           isPartOfBiggerPipe = true
 
           let potentialOtherRight = out.find(({ startPoint }) =>
-            currentEndPoint.clone().round().equals(startPoint.clone().round())
+          roundVector(currentEndPoint).equals(roundVector(startPoint))
           )
 
           // Potentieller nachbar für rechts suchen
@@ -140,14 +142,14 @@ export class PlacedEntities {
             wholePipe.endPoint = potentialOtherRight.endPoint
             wholePipe.pipeCount += potentialOtherRight.pipeCount
           }
-        } else if (currentEndPoint.clone().round().equals(wholePipe.startPoint.clone().round())) {
+        } else if (roundVector(currentEndPoint).equals(roundVector(wholePipe.startPoint))) {
           // Nachbar rechts gefunden
           wholePipe.startPoint = currentStartPoint
           wholePipe.pipeCount++
           isPartOfBiggerPipe = true
 
           let potentialOtherLeft = out.find(({ endPoint }) =>
-            currentStartPoint.clone().round().equals(endPoint.clone().round())
+            roundVector(currentStartPoint).equals(roundVector(endPoint))
           )
 
           if (potentialOtherLeft) {
@@ -164,6 +166,8 @@ export class PlacedEntities {
       if (!isPartOfBiggerPipe) {
         out.push({ startPoint: currentStartPoint, endPoint: currentEndPoint, pipeCount: 1 })
       }
+
+      console.log(currentStartPoint, "after")
     })
 
     return out

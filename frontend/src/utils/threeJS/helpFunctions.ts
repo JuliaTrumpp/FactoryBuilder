@@ -329,23 +329,31 @@ export const drawBox = (object: THREE.Object3D, scene: THREE.Scene): void => {
   scene.add(box)
 }
 
-// export const roundVector = (vector: THREE.Vector3): THREE.Vector3 =>  {
-//   vector.x = Math.round(vector.x * 2, Midpoint.AwayFromZero) / 2
+export const roundVector = (vector: THREE.Vector3): THREE.Vector3 =>  {
+  const v = vector.clone();
+  v.x = roundToHalf(v.x)
+  v.y = roundToHalf(v.y);
+  v.z = roundToHalf(v.z);
+  return v;
+}
 
+export const roundToHalf = (value: number): number =>  {
+  // Berechnen Sie den Dezimalteil der Zahl
+  const decimal: number = (value - parseInt(value.toString(), 10));
+  
+  // Runden Sie den Dezimalteil auf die nächste Zehntelstelle
+  const roundedDecimal: number = Math.round(decimal * 10);
+  
+  // Überprüfen Sie den Wert des Dezimalteils
+  if (roundedDecimal === 5) {
+    // Wenn genau 5, geben Sie den ganzzahligen Teil plus 0.5 zurück
+    return parseInt(value.toString(), 10) + 0.5;
+  } else if (roundedDecimal < 3 || roundedDecimal > 7) {
+    // Wenn weniger als 3 oder größer als 7, runden Sie die gesamte Zahl
+    return Math.round(value);
+  } else {
+    // Andernfalls geben Sie den ganzzahligen Teil plus 0.5 zurück
+    return parseInt(value.toString(), 10) + 0.5;
+  }
+}
 
-//   vector.y = Math.round(vector.y * 2) / 2;
-//   vector.z = Math.round(vector.z * 2) / 2;
-//   return vector.clone();
-// }
-
-// function roundToHalf(value:) {
-//   var converted = parseFloat(value); // Make sure we have a number
-//   var decimal = (converted - parseInt(converted, 10));
-//   decimal = Math.round(decimal * 10);
-//   if (decimal == 5) { return (parseInt(converted, 10)+0.5); }
-//   if ( (decimal < 3) || (decimal > 7) ) {
-//      return Math.round(converted);
-//   } else {
-//      return (parseInt(converted, 10)+0.5);
-//   }
-// }
