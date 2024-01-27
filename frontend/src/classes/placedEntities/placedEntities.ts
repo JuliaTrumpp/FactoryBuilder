@@ -91,6 +91,18 @@ export class PlacedEntities {
     }
   }
 
+  public getEndPointsFromCombinedPipes = (
+    combinedPipes: ICombinedPipe
+  ): {
+    startPoint: THREE.Vector3
+    endPoint: THREE.Vector3
+  } => {
+    return {
+      startPoint: combinedPipes.sections[0].startPoint,
+      endPoint: combinedPipes.sections[combinedPipes.sections.length - 1].endPoint
+    }
+  }
+
   /**
    * Pipe System
    *
@@ -98,132 +110,52 @@ export class PlacedEntities {
    */
 
   public getAllPipes = (): ICombinedPipe[] => {
-
-    const allStraightPipes = this.getAllStraightPipes();
-    const allCurvedPipes = this.getAllCurvedPipes();
-
-    const combinedPipes: ICombinedPipe[] = [];
-
-    // Funktion zum Runden der Start- und Endpunkte
-    const roundSectionPoints = (section: IPipeInfo): IPipeInfo => {
-      return {
-        ...section,
-        startPoint: roundVector(section.startPoint),
-        endPoint: roundVector(section.endPoint),
-      };
-    };
-
-    // Funktion zum Hinzufügen eines Pipe-Abschnitts zu einem kombinierten Pipe
-    const addSectionToCombinedPipe = (
-      combinedPipe: ICombinedPipe,
-      section: IPipeInfo
-    ) => {
-      combinedPipe.sections.push(section);
-      combinedPipe.totalPipeCount += section.pipeCount;
-    };
-
-    // Funktion zum Erstellen eines neuen kombinierten Pipe für einen Pipe-Abschnitt
-    const createCombinedPipe = (section: IPipeInfo): ICombinedPipe => {
-      return {
-        sections: [section],
-        totalPipeCount: section.pipeCount,
-      };
-    };
-
-    allCurvedPipes.forEach((curvedPipe) => {
-      const curvedSection: IPipeInfo = roundSectionPoints({
-        type: 'curve',
-        startPoint: curvedPipe.startPoint,
-        endPoint: curvedPipe.endPoint,
-        pipeCount: curvedPipe.pipeCount,
-      });
-
-      const existingCombinedPipe = combinedPipes.find(
-        (combinedPipe) =>
-          roundVector(combinedPipe.sections[combinedPipe.sections.length - 1].endPoint).equals(curvedSection.startPoint) &&
-          combinedPipe.sections[combinedPipe.sections.length - 1].type === 'curve'
-      );
-
-      if (existingCombinedPipe) {
-        addSectionToCombinedPipe(existingCombinedPipe, curvedSection);
-      } else {
-        combinedPipes.push(createCombinedPipe(curvedSection));
-      }
-    });
-
-    allStraightPipes.forEach((straightPipe) => {
-      const straightSection: IPipeInfo = roundSectionPoints({
-        type: 'straight',
-        startPoint: straightPipe.startPoint,
-        endPoint: straightPipe.endPoint,
-        pipeCount: straightPipe.pipeCount,
-      });
-
-      const existingCombinedPipe = combinedPipes.find(
-        (combinedPipe) =>
-          roundVector(combinedPipe.sections[combinedPipe.sections.length - 1].endPoint).equals(straightSection.startPoint) &&
-          combinedPipe.sections[combinedPipe.sections.length - 1].type === 'straight'
-      );
-
-      if (existingCombinedPipe) {
-        addSectionToCombinedPipe(existingCombinedPipe, straightSection);
-      } else {
-        combinedPipes.push(createCombinedPipe(straightSection));
-      }
-    });
-    return combinedPipes;
-  };
+    const allPipes = [...this.getAllCurvedPipes(), ...this.getAllStraightPipes()]
+    console.log(allPipes)
+    return dataset
+  }
 
   public getAllStraightPipes = (): IPipeInfo[] => {
     let out: IPipeInfo[] = []
+    this.getAllStraightSinglePipes().forEach(({ startPoint: currentStartPoint, endPoint: currentEndPoint }) => {
 
-    this.getAllStraightSinglePipes().forEach(({startPoint: currentStartPoint, endPoint: currentEndPoint }) => {
-      let isPartOfBiggerPipe = false
+      const left = out.find(({ endPoint }) =>
+        roundVector(endPoint).equals(roundVector(currentStartPoint))
+      )
 
-      out.forEach((wholePipe) => {
-        if (roundVector(currentStartPoint).equals(roundVector(wholePipe.endPoint))) {
-          // Nachbar links gefunden
-          wholePipe.endPoint = currentEndPoint
-          wholePipe.pipeCount++
-          isPartOfBiggerPipe = true
+      const right = out.find(({ startPoint }) =>
+        roundVector(startPoint).equals(roundVector(currentEndPoint))
+      )
 
-          let potentialOtherRight = out.find(({ startPoint }) =>
-            roundVector(currentEndPoint).equals(roundVector(startPoint))
-          )
-
-          // Potentieller nachbar für rechts suchen
-          if (potentialOtherRight) {
-            // Deleting other
-            out = out.filter((pipe) => pipe != potentialOtherRight)
-
-            // Extending
-            wholePipe.endPoint = potentialOtherRight.endPoint
-            wholePipe.pipeCount += potentialOtherRight.pipeCount
-          }
-        } else if (roundVector(currentEndPoint).equals(roundVector(wholePipe.startPoint))) {
-          // Nachbar rechts gefunden
-          wholePipe.startPoint = currentStartPoint
-          wholePipe.pipeCount++
-          isPartOfBiggerPipe = true
-
-          let potentialOtherLeft = out.find(({ endPoint }) =>
-            roundVector(currentStartPoint).equals(roundVector(endPoint))
-          )
-
-          if (potentialOtherLeft) {
-            // Deleting other
-            out = out.filter((pipe) => pipe != potentialOtherLeft)
-
-            // Extending
-            wholePipe.startPoint = potentialOtherLeft.startPoint
-            wholePipe.pipeCount += potentialOtherLeft.pipeCount
-          }
-        }
-      })
-
-      if (!isPartOfBiggerPipe) {
-        out.push({ startPoint: currentStartPoint, endPoint: currentEndPoint, pipeCount: 1, type:"straight" })
+      // Keine nachbarn gefunden
+      if (!left && !right) {
+        out.push({
+          startPoint: currentStartPoint,
+          endPoint: currentEndPoint,
+          pipeCount: 1,
+          type: 'straight'
+        })
       }
+
+      // Only found on left side
+      if (left && !right) {
+        left.endPoint = currentEndPoint
+        left.pipeCount++
+      }
+
+      // Only found on right site
+      if (!left && right) {
+        right.startPoint = currentStartPoint
+        right.pipeCount++
+      }
+
+      // // found on both sides delete
+      if (right && left) {
+        left.endPoint = right.endPoint
+        left.pipeCount += right.pipeCount + 1
+        out = out.filter(pipe => pipe !== right)
+      }
+      
     })
 
     return out
@@ -242,11 +174,11 @@ export type IPipeInfo = {
   startPoint: THREE.Vector3
   endPoint: THREE.Vector3
   pipeCount: number
-  type: 'straight' | 'curve';
+  type: 'straight' | 'curve'
 }
 
 export type ICombinedPipe = {
-  sections: IPipeInfo[],
+  sections: IPipeInfo[]
   totalPipeCount: number
 }
 
@@ -283,6 +215,9 @@ const turnRight = (orientation: string): string => {
   }
 }
 
+const arraysAreEqual = (ary1: any[], ary2: any[]) => {
+  return ary1.join('') == ary2.join('')
+}
 
 const dataset: ICombinedPipe[] = [
   {
@@ -291,22 +226,22 @@ const dataset: ICombinedPipe[] = [
         type: 'curve',
         startPoint: new THREE.Vector3(0, 0, 0),
         endPoint: new THREE.Vector3(1, 1, 1),
-        pipeCount: 1,
+        pipeCount: 1
       },
       {
         type: 'straight',
         startPoint: new THREE.Vector3(1, 1, 1),
         endPoint: new THREE.Vector3(3, 1, 1),
-        pipeCount: 1,
+        pipeCount: 1
       },
       {
         type: 'curve',
         startPoint: new THREE.Vector3(3, 1, 1),
         endPoint: new THREE.Vector3(4, 0, 0),
-        pipeCount: 1,
-      },
+        pipeCount: 1
+      }
     ],
-    totalPipeCount: 3,
+    totalPipeCount: 3
   },
   {
     sections: [
@@ -314,15 +249,15 @@ const dataset: ICombinedPipe[] = [
         type: 'straight',
         startPoint: new THREE.Vector3(0, 2, 1),
         endPoint: new THREE.Vector3(3, 2, 1),
-        pipeCount: 2,
+        pipeCount: 2
       },
       {
         type: 'curve',
         startPoint: new THREE.Vector3(3, 2, 1),
         endPoint: new THREE.Vector3(6, 2, 1),
-        pipeCount: 1,
-      },
+        pipeCount: 1
+      }
     ],
-    totalPipeCount: 3,
-  },
-];
+    totalPipeCount: 3
+  }
+]

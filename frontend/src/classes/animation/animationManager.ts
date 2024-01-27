@@ -20,19 +20,19 @@ export class AnimationManager {
   // Controlls
 
   startAnimation() {
-    // this.placedEntitesRef.getAllStraightPipes().forEach(({ startPoint, endPoint, pipeCount }) => {
-    //   this.animateObjectLinear(startPoint, endPoint, this.mockModelUrl, 500 * pipeCount, () => {})
-    // })
+    this.placedEntitesRef.getAllStraightPipes().forEach(({ startPoint, endPoint, pipeCount }) => {
+      this.animateObjectLinear(startPoint, endPoint, this.mockModelUrl, 500 * pipeCount, () => {})
+    })
 
     // this.placedEntitesRef.getAllCurvedPipes().forEach(({ startPoint, endPoint }) => {
     //   this.animateObjectCurved(startPoint, endPoint, this.mockModelUrl, 500, () => {})
     // })
 
-    this.startAnimateObjectThroughPipe(
-      this.placedEntitesRef.getAllPipes()[0],
-      this.mockModelUrl,
-      500
-    )
+    // this.startAnimateObjectThroughPipe(
+    //   this.placedEntitesRef.getAllPipes()[0],
+    //   this.mockModelUrl,
+    //   500
+    // )
   }
 
   stoppAnimation() {}
@@ -44,18 +44,33 @@ export class AnimationManager {
     currentIndex: number = 0
   ) => {
     // Beende
-    if(currentIndex === pipe.sections.length) return;
+    if (currentIndex === pipe.sections.length) return
 
     const section = pipe.sections[currentIndex]
-    
-    if(section.type === "straight") {
-      this.animateObjectLinear(section.startPoint.clone(), section.endPoint.clone(), path, duration, () => {
-        this.startAnimateObjectThroughPipe(pipe, path, duration, currentIndex + 1)
-      })
-    } else if (section.type === "curve") {
-      this.animateObjectCurved(section.startPoint.clone(), section.endPoint.clone(), path, duration, () => {
-        this.startAnimateObjectThroughPipe(pipe, path, duration, currentIndex + 1)
-      })
+
+    switch (section.type) {
+      case 'straight':
+        this.animateObjectLinear(
+          section.startPoint.clone(),
+          section.endPoint.clone(),
+          path,
+          duration,
+          () => {
+            this.startAnimateObjectThroughPipe(pipe, path, duration, currentIndex + 1)
+          }
+        )
+        break
+      case 'curve':
+        this.animateObjectCurved(
+          section.startPoint.clone(),
+          section.endPoint.clone(),
+          path,
+          duration,
+          () => {
+            this.startAnimateObjectThroughPipe(pipe, path, duration, currentIndex + 1)
+          }
+        )
+        break
     }
   }
 
