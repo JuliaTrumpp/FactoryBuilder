@@ -278,7 +278,7 @@ const onClearAllClick = (event: any) => {
 }
 
 const onDebugClick = (event: any) => {
-  
+  placedEntities.getAllPipes();
 }
 
 /**
