@@ -85,10 +85,19 @@ export class PlacedEntities {
       }
     }
 
-    return {
+    if(pipe.orientation === "South" || pipe.orientation === "West") {
+      return {
+        startPoint: getCenterPoint(pipeExit).clone(),
+        endPoint: getCenterPoint(pipeEntrance).clone()
+      }
+    } else return {
       startPoint: getCenterPoint(pipeEntrance).clone(),
       endPoint: getCenterPoint(pipeExit).clone()
     }
+
+    
+
+
   }
 
   public getEndPointsFromCombinedPipes = (
@@ -149,7 +158,7 @@ export class PlacedEntities {
         right.pipeCount++
       }
 
-      // // found on both sides delete
+      // found on both sides delete
       if (right && left) {
         left.endPoint = right.endPoint
         left.pipeCount += right.pipeCount + 1
