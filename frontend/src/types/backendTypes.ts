@@ -103,7 +103,7 @@ export interface ILoginForm{
 }
 
 export interface IBackendMessageEvent{
-    messageEventtype: string; 
-    eventId: number; 
-    messageOperationtype: string; 
+    eventType: string; 
+    eventID: number; 
+    operationType: string; 
 }

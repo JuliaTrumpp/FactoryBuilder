@@ -6,7 +6,7 @@ import { getAllEntities, getEntityInFactory } from '@/utils/backend-communicatio
 //import { stompRemoveEntity } from '@/views/Factory.vue'
 import type { IMessage } from '@stomp/stompjs'
 import { Client } from '@stomp/stompjs'
-import {stompRemoveEntity} from '@/views/Factory.vue'
+// import {stompRemoveEntity} from '@/views/Factory.vue'
 
 class StompClientBuilder {
   private readonly factoryID: number
@@ -38,19 +38,21 @@ class StompClientBuilder {
       console.log('Received:', message.body)
 
       const backendMessageEvent: IBackendMessageEvent = JSON.parse(message.body)
+      console.log("BackendMessageEvent: ", backendMessageEvent)
 
 
-      if (backendMessageEvent.messageOperationtype == 'UPDATE') {
+      if (backendMessageEvent.operationType == 'UPDATE') {
         
-        getEntityInFactory(backendMessageEvent.eventId).then((changedPlacedModel: IBackendEntity) => {
+        getEntityInFactory(backendMessageEvent.eventID).then((changedPlacedModel: IBackendEntity) => {
           // dieses Entity neu laden und im FE setzen (es wurde verschoben/ rotiert/ etc wurde)
           // changedPlacedModel benutzen
         })
-      } else if (backendMessageEvent.messageOperationtype == 'DELETE') {
+      } else if (backendMessageEvent.operationType == 'DELETE') {
+        console.log("Ich geh in den else DELETE rein")
         // dieses Entity im FE löschen
         // delete allPlacedEntities[changedPlacedModel.id]
         // scene.remove(changedPlacedModel)     
-        const allPlacedEntities = stompRemoveEntity(1);  // die methode braucht eigentlich das model
+        // const allPlacedEntities = stompRemoveEntity(1);  // die methode braucht eigentlich das model
         // changedPlacedModel benutzen
       }
       })
