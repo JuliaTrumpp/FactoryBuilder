@@ -639,14 +639,41 @@ const animate = (timestamp: any) => {
   renderer.render(scene, camera)
 }
 
-// const stompRemoveEntity = (tmp: number) => { // hier modelDasRemovedWerdenSoll mitgeben
-//   const modelDasRemovedWerdenSoll = null;// diese überschreiben
-//   delete allPlacedEntities[3] // hier die id von modelDasRemovedWerdenSoll
-//   //scene.remove(modelDasRemovedWerdenSoll)
-// }
-
 
 init()
+
+</script>
+
+<script lang="ts">
+import allPlacedEntities from '@/views/Factory.vue'
+import scene from '@/views/Factory.vue'
+import renderer from '@/views/Factory.vue'
+import camera from '@/views/Factory.vue'
+
+
+
+  export const stompRemoveEntity = (entityId: number) => { 
+
+    console.info("stompRemoveEntity wurde erreicht!")
+    console.info("Entity mit id ", entityId, " soll gelöscht werden")
+    
+    for (const uuid in allPlacedEntities) {
+      if (allPlacedEntities.hasOwnProperty(uuid)) {
+        const entity = allPlacedEntities[uuid];
+
+        // Überprüfe, ob die entityId übereinstimmt
+        if (entity.id === entityId) {
+          delete allPlacedEntities[uuid];
+          //scene.remove(modelDasRemovedWerdenSoll) 
+          scene.remove(allPlacedEntities[uuid])
+          //renderer.render(scene, camera)
+          break; 
+        }
+      }   
+    }
+  
+  }
+
 </script>
 
 <template>
