@@ -20,19 +20,7 @@ export class AnimationManager {
   // Controlls
 
   startAnimation() {
-    this.placedEntitesRef.getAllStraightPipes().forEach(({ startPoint, endPoint, pipeCount }) => {
-      this.animateObjectLinear(startPoint, endPoint, this.mockModelUrl, 500 * pipeCount, () => {})
-    })
-
-    // this.placedEntitesRef.getAllCurvedPipes().forEach(({ startPoint, endPoint }) => {
-    //   this.animateObjectCurved(startPoint, endPoint, this.mockModelUrl, 500, () => {})
-    // })
-
-    // this.startAnimateObjectThroughPipe(
-    //   this.placedEntitesRef.getAllPipes()[0],
-    //   this.mockModelUrl,
-    //   500
-    // )
+    this.placedEntitesRef.getAllPipes().forEach((pipe) => this.startAnimateObjectThroughPipe(pipe, this.mockModelUrl, 500))
   }
 
   stoppAnimation() {}
@@ -54,7 +42,7 @@ export class AnimationManager {
           section.startPoint.clone(),
           section.endPoint.clone(),
           path,
-          duration,
+          duration * section.pipeCount,
           () => {
             this.startAnimateObjectThroughPipe(pipe, path, duration, currentIndex + 1)
           }
@@ -65,7 +53,7 @@ export class AnimationManager {
           section.startPoint.clone(),
           section.endPoint.clone(),
           path,
-          duration,
+          duration * section.pipeCount,
           () => {
             this.startAnimateObjectThroughPipe(pipe, path, duration, currentIndex + 1)
           }
