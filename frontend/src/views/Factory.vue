@@ -27,6 +27,7 @@ import {
   drawBox,
   drawLine,
   moveHighlight,
+  roundToHalf,
   selectionObject,
   updateHighlightModel
 } from '@/utils/threeJS/helpFunctions'
@@ -277,7 +278,7 @@ const onClearAllClick = (event: any) => {
 }
 
 const onDebugClick = (event: any) => {
-
+  placedEntities.getAllPipes();
 }
 
 /**

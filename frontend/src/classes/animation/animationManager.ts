@@ -1,7 +1,8 @@
 import { interpolateVector } from '@/utils/animation/animation'
 import { loadEntitie } from '@/utils/threeJS/entityManipulation'
 import * as THREE from 'three'
-import type { PlacedEntities } from '../placedEntities/placedEntities'
+import type { ICombinedPipe, PlacedEntities } from '../placedEntities/placedEntities'
+import { drawLine } from '@/utils/threeJS/helpFunctions'
 
 export class AnimationManager {
   private placedEntitesRef: PlacedEntities
@@ -16,17 +17,52 @@ export class AnimationManager {
     this.loaderRef = loaderRef
   }
 
-  startAnimation() {
-    this.placedEntitesRef.getAllStraightPipes().forEach(({ startPoint, endPoint, pipeCount }) => {
-      this.animateObjectLinear(startPoint, endPoint, this.mockModelUrl, 500 * pipeCount, () => {})
-    })
+  // Controlls
 
-    this.placedEntitesRef.getAllCurvedPipes().forEach(({ startPoint, endPoint }) => {
-      this.animateObjectCurved(startPoint, endPoint, this.mockModelUrl, 500, () => {})
-    })
+  startAnimation() {
+    this.placedEntitesRef.getAllPipes().forEach((pipe) => this.startAnimateObjectThroughPipe(pipe, this.mockModelUrl, 500))
   }
 
   stoppAnimation() {}
+
+  startAnimateObjectThroughPipe = (
+    pipe: ICombinedPipe,
+    path: string,
+    duration: number,
+    currentIndex: number = 0
+  ) => {
+    // Beende
+    if (currentIndex === pipe.sections.length) return
+
+    const section = pipe.sections[currentIndex]
+
+    switch (section.type) {
+      case 'straight':
+        this.animateObjectLinear(
+          section.startPoint.clone(),
+          section.endPoint.clone(),
+          path,
+          duration * section.pipeCount,
+          () => {
+            this.startAnimateObjectThroughPipe(pipe, path, duration, currentIndex + 1)
+          }
+        )
+        break
+      case 'curve':
+        this.animateObjectCurved(
+          section.startPoint.clone(),
+          section.endPoint.clone(),
+          path,
+          duration * section.pipeCount,
+          () => {
+            this.startAnimateObjectThroughPipe(pipe, path, duration, currentIndex + 1)
+          }
+        )
+        break
+    }
+  }
+
+  // Primitive
 
   animateObjectLinear = (
     from: THREE.Vector3,
@@ -76,6 +112,7 @@ export class AnimationManager {
     to: THREE.Vector3,
     path: string,
     duration: number,
+    type: string,
     onEnd?: () => void
   ) => {
     let startTime: number
