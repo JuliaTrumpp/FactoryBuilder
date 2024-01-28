@@ -41,33 +41,8 @@ export class PlacedEntities {
   public getAllEntities = (): IEntity[] => this.allEntities
 
   /**
-   * Single Pipe Actions
+   * Get Points
    */
-  public getAllStraightSinglePipes = (): IPipeInfo[] => {
-    return this.allEntities
-      .filter((entity) => entity.modelId === 'pipe_straight')
-      .map((mesh) => {
-        return {
-          startPoint: this.getPointsStraightFromPipe(mesh).startPoint.clone(),
-          endPoint: this.getPointsStraightFromPipe(mesh).endPoint.clone(),
-          pipeCount: 1,
-          type: 'straight'
-        }
-      })
-  }
-
-  public getAllCurvedPipes = (): IPipeInfo[] => {
-    return this.allEntities
-      .filter((entity) => entity.modelId === 'pipe_curved')
-      .map((mesh) => {
-        return {
-          startPoint: this.getPointFromCurvedPipe(mesh).startPoint.clone(),
-          endPoint: this.getPointFromCurvedPipe(mesh).endPoint.clone(),
-          pipeCount: 1,
-          type: 'curve'
-        }
-      })
-  }
 
   public getPointsStraightFromPipe = (
     pipe: IEntity
@@ -98,10 +73,10 @@ export class PlacedEntities {
   }
 
   public getPointFromCurvedPipe = (
-      pipe: IEntity
+    pipe: IEntity
   ): { startPoint: THREE.Vector3; endPoint: THREE.Vector3 } => {
     const pipeEntrance = pipe.threejsObject.children.find(
-        (mesh) => mesh.name === 'pipe_entrance' || mesh.name === 'pipe_entrence'
+      (mesh) => mesh.name === 'pipe_entrance' || mesh.name === 'pipe_entrence'
     )
     const pipeExit = pipe.threejsObject.children.find((mesh) => mesh.name === 'pipe_exit')
 
@@ -132,11 +107,8 @@ export class PlacedEntities {
   }
 
   /**
-   * Pipe System
-   *
-   * TODO: Auch rotierte Pipes also | start - end end - start|
+   * Get Pipes
    */
-
   public getAllPipes = (): ICombinedPipe[] => {
     const allPipes = [...this.getAllCurvedPipes(), ...this.getAllStraightPipes()]
     let out: ICombinedPipe[] = []
@@ -162,16 +134,16 @@ export class PlacedEntities {
         return roundVector(startPoint).equals(roundVector(currentPipe.endPoint))
       })
 
-      console.log(right, left, rotatedRight, rotatedLeft)
-/**
-      if(rotatedLeft) {
-        left = reverseCombinedPipe(rotatedLeft)
-      }
+      // console.log(right, left, rotatedRight, rotatedLeft)
 
-      if(rotatedRight) {
-        right = reverseCombinedPipe(rotatedRight)
-      }
-**/
+      // if (rotatedLeft) {
+      //   left = reverseCombinedPipe(rotatedLeft)
+      // }
+
+      // if (rotatedRight) {
+      //   right = reverseCombinedPipe(rotatedRight)
+      // }
+
       // Keine nachbarn gefunden
       if (!left && !right) {
         out.push({
@@ -200,14 +172,14 @@ export class PlacedEntities {
         out = out.filter((pipe) => pipe !== right)
       }
     })
-
+    console.log(out)
     return out
   }
 
   public getAllStraightPipes = (): IPipeInfo[] => {
     let out: IPipeInfo[] = []
     this.getAllStraightSinglePipes().forEach(
-      ({ startPoint: currentStartPoint, endPoint: currentEndPoint }) => {
+      ({ startPoint: currentStartPoint, endPoint: currentEndPoint, orientation }) => {
         const left = out.find(({ endPoint }) =>
           roundVector(endPoint).equals(roundVector(currentStartPoint))
         )
@@ -222,7 +194,8 @@ export class PlacedEntities {
             startPoint: currentStartPoint,
             endPoint: currentEndPoint,
             pipeCount: 1,
-            type: 'straight'
+            type: 'straight',
+            orientation: orientation
           })
         }
 
@@ -248,13 +221,43 @@ export class PlacedEntities {
     )
     return out
   }
+
+  public getAllStraightSinglePipes = (): IPipeInfo[] => {
+    return this.allEntities
+      .filter((entity) => entity.modelId === 'pipe_straight')
+      .map((mesh) => {
+        return {
+          startPoint: this.getPointsStraightFromPipe(mesh).startPoint.clone(),
+          endPoint: this.getPointsStraightFromPipe(mesh).endPoint.clone(),
+          pipeCount: 1,
+          type: 'straight',
+          orientation: mesh.orientation
+        }
+      })
+  }
+
+  public getAllCurvedPipes = (): IPipeInfo[] => {
+    return this.allEntities
+      .filter((entity) => entity.modelId === 'pipe_curved')
+      .map((mesh) => {
+        return {
+          startPoint: this.getPointFromCurvedPipe(mesh).startPoint.clone(),
+          endPoint: this.getPointFromCurvedPipe(mesh).endPoint.clone(),
+          pipeCount: 1,
+          type: 'curve',
+          orientation: mesh.orientation
+        }
+      })
+  }
 }
+
+export type ICompass = 'North' | 'West' | 'South' | 'East'
 
 export type IEntity = {
   id: number // Wie im backend
   modelId: string // Modelname
   uuid: string // UUID vom threejs object
-  orientation: string
+  orientation: ICompass
   threejsObject: THREE.Object3D
 }
 
@@ -263,6 +266,7 @@ export type IPipeInfo = {
   endPoint: THREE.Vector3
   pipeCount: number
   type: 'straight' | 'curve'
+  orientation: ICompass
 }
 
 export type ICombinedPipe = {
@@ -273,7 +277,7 @@ export type ICombinedPipe = {
 /**
  * Helper
  */
-const turnLeft = (orientation: string): string => {
+const turnLeft = (orientation: ICompass): ICompass => {
   switch (orientation) {
     case 'North':
       return 'West'
@@ -288,7 +292,7 @@ const turnLeft = (orientation: string): string => {
   }
 }
 
-const turnRight = (orientation: string): string => {
+const turnRight = (orientation: ICompass): ICompass => {
   switch (orientation) {
     case 'North':
       return 'East'
@@ -306,20 +310,22 @@ const turnRight = (orientation: string): string => {
 const reverseCombinedPipe = (toReverse: ICombinedPipe): ICombinedPipe => {
   return {
     totalPipeCount: toReverse.totalPipeCount,
-    sections: toReverse.sections.map(({startPoint, endPoint, pipeCount, type}) => {
-      const start = startPoint.clone()
-      const end = endPoint.clone()
+    sections: toReverse.sections
+      .map(({ startPoint, endPoint, pipeCount, type, orientation }) => {
+        const start = startPoint.clone()
+        const end = endPoint.clone()
 
-      return {
-        startPoint: end,
-        endPoint: start,
-        pipeCount: pipeCount,
-        type: type
-      }
-    }).reverse()
+        return {
+          startPoint: end,
+          endPoint: start,
+          pipeCount: pipeCount,
+          type: type,
+          orientation: orientation
+        }
+      })
+      .reverse()
   }
 }
-
 
 const dataset: ICombinedPipe = {
   sections: [
@@ -327,20 +333,23 @@ const dataset: ICombinedPipe = {
       startPoint: new THREE.Vector3(0, 0, 0),
       endPoint: new THREE.Vector3(5, 0, 0),
       pipeCount: 3,
-      type: 'straight'
+      type: 'straight',
+      orientation:"North"
     },
     {
       startPoint: new THREE.Vector3(5, 0, 0),
       endPoint: new THREE.Vector3(5, 5, 0),
       pipeCount: 2,
-      type: 'curve'
+      type: 'curve',
+      orientation:"North"
     },
     {
       startPoint: new THREE.Vector3(5, 5, 0),
       endPoint: new THREE.Vector3(10, 5, 0),
       pipeCount: 4,
-      type: 'straight'
+      type: 'straight',
+      orientation:"North"
     }
   ],
   totalPipeCount: 3 + 2 + 4 // Summe der Rohre in allen Abschnitten
-};
+}

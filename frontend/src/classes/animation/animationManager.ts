@@ -1,7 +1,7 @@
 import { interpolateVector } from '@/utils/animation/animation'
 import { loadEntitie } from '@/utils/threeJS/entityManipulation'
 import * as THREE from 'three'
-import type { ICombinedPipe, PlacedEntities } from '../placedEntities/placedEntities'
+import type { ICombinedPipe, ICompass, PlacedEntities } from '../placedEntities/placedEntities'
 import { drawLine } from '@/utils/threeJS/helpFunctions'
 
 export class AnimationManager {
@@ -20,7 +20,9 @@ export class AnimationManager {
   // Controlls
 
   startAnimation() {
-    this.placedEntitesRef.getAllPipes().forEach((pipe) => this.startAnimateObjectThroughPipe(pipe, this.mockModelUrl, 500))
+    this.placedEntitesRef
+      .getAllPipes()
+      .forEach((pipe) => this.startAnimateObjectThroughPipe(pipe, this.mockModelUrl, 500))
   }
 
   stoppAnimation() {}
@@ -54,6 +56,7 @@ export class AnimationManager {
           section.endPoint.clone(),
           path,
           duration * section.pipeCount,
+          section.orientation,
           () => {
             this.startAnimateObjectThroughPipe(pipe, path, duration, currentIndex + 1)
           }
@@ -112,12 +115,13 @@ export class AnimationManager {
     to: THREE.Vector3,
     path: string,
     duration: number,
-    type: string,
+    orientation: ICompass,
     onEnd?: () => void
   ) => {
     let startTime: number
 
     loadEntitie(this.loaderRef, path).then((object) => {
+      let midPoint = new THREE.Vector3()
       // Berechne die Größe der BoundingBox und verschiebe in die Mitte
       let boundingBox = new THREE.Box3().setFromObject(object)
       let centerOfBoundingBox = new THREE.Vector3()
@@ -126,9 +130,16 @@ export class AnimationManager {
       to.sub(centerOfBoundingBox.clone())
 
       // Berechne den mittleren Punkt zwischen from und to
-      const midPoint = new THREE.Vector3()
-        .lerpVectors(from, to, 0.5)
-        .add(new THREE.Vector3(0, -from.distanceTo(to) / 3, 0))
+
+      if (orientation === 'South' || orientation === 'West') {
+        midPoint = new THREE.Vector3()
+          .lerpVectors(from, to, 0.5)
+          .add(new THREE.Vector3(0, from.distanceTo(to) / 3, 0))
+      } else {
+        midPoint = new THREE.Vector3()
+          .lerpVectors(from, to, 0.5)
+          .add(new THREE.Vector3(0, -from.distanceTo(to) / 3, 0))
+      }
 
       // drawLine(from, to, this.sceneRef)
       // drawLine(midPoint, midPoint, this.sceneRef)
