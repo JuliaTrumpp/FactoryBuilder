@@ -143,6 +143,6 @@ img {
 }
 
 a:hover {
-  background-color: transparent; /* war die ganze zeit so komisch grün */
+  background-color: transparent; 
 }
 </style>

@@ -185,12 +185,11 @@ public class ManipulateAbstractModelService implements PlacedModelServiceTemplat
 
 
                 oldOrientation = tmpOrientation;
-                backupRootPos = createNewPosition(thisModel.getRootPos().getX(), thisModel.getRootPos().getY(), thisModel.getRootPos().getZ());
+                //backupRootPos = createNewPosition(thisModel.getRootPos().getX(), thisModel.getRootPos().getY(), thisModel.getRootPos().getZ());
             } catch (Exception e) {
                 LOGGER.error("An error occurred: " + e);
                 return false;
             }
-
         }
         //validate placement or else fallback to old position and orientation
         if (!checkForPlacement(thisModel)) {
@@ -208,6 +207,8 @@ public class ManipulateAbstractModelService implements PlacedModelServiceTemplat
             //place placedModel on new fields
             for (Field f : thisModel.getPlacedFields())
                 fieldService.setPlacedModelOnField(thisModel, f);
+
+            thisModel.setRootPos(backupRootPos);
         } catch (Exception e) {
             LOGGER.error("Rotating model NOT successfull: " + e);
             return false;

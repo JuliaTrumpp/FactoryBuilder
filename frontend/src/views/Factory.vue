@@ -133,6 +133,10 @@ const setupLights = (): void => {
   scene.add(directionalLight)
 }
 
+const setupLoader = (): void => {
+  loader = new GLTFLoader()
+}
+
 const setupManager = (): void => {
   placedEntities.value = new PlacedEntities(scene, loader)
   animationManager = new AnimationManager(placedEntities.value, scene, loader)
@@ -140,9 +144,6 @@ const setupManager = (): void => {
   currentMode = ccm.currentMode
 }
 
-const setupLoader = (): void => {
-  loader = new GLTFLoader()
-}
 
 const setupStompClientBuilder = (): void => { // = startQuizLiveUpdate()
   if(stompClientBuilder.value == null) {
@@ -331,7 +332,8 @@ const handleKeyDown = (event: KeyboardEvent) => {
                     originalOrientation,
                     placedEntities.value!!.getByUUID(currentObjectSelected.uuid).orientation,
                     currentObjectSelected,
-                    placedEntities.value!!
+                    placedEntities.value!!,
+                    true
                 )
               }
             })
@@ -668,6 +670,12 @@ const animate = (timestamp: any) => {
   renderer.render(scene, camera)
 }
 
+/**
+ * Start Game
+ **/
+
+init()
+
 const saveAndCloseScript = (scriptContent: string) => {
   showScripting.value = !showScripting.value
   showMenuBar.value = true
@@ -684,66 +692,6 @@ const closeScript = () => {
   showScripting.value = !showScripting.value
   showMenuBar.value = true
 }
-
-
-/**
- * Start Game
- **/
-
-init()
-
-</script>
-
-<script lang="ts">
-import allPlacedEntities from '@/views/Factory.vue'
-import scene from '@/views/Factory.vue'
-import factoryID from '@/views/Factory.vue'
-import currentObjectSelected from '@/views/Factory.vue'
-
-
-  export const stompRemoveEntity = (entityId: number) => { 
-
-    console.info("stompRemoveEntity wurde erreicht!")
-    console.info("Entity mit id ", entityId, " soll gelöscht werden")
-    
-    // for (const uuid in allPlacedEntities) {
-    //   if (allPlacedEntities.hasOwnProperty(uuid)) {
-    //     const entity = allPlacedEntities[uuid];
-
-    //     // Überprüfe, ob die entityId übereinstimmt
-    //     if (entity.id === entityId) {
-    //       delete allPlacedEntities[uuid];
-    //       //scene.remove(modelDasRemovedWerdenSoll) 
-    //       scene.remove(allPlacedEntities[uuid])
-    //       //renderer.render(scene, camera)
-    //       break; 
-    //     }
-    //   }   
-    // }
-
-    for (const uuid in allPlacedEntities) {
-      scene.remove(allPlacedEntities[uuid])
-
-      // if (allPlacedEntities.hasOwnProperty(uuid)) {
-      //   const entity = allPlacedEntities[uuid];
-
-
-
-      //   // // Überprüfe, ob die entityId übereinstimmt
-      //   // if (entity.id === entityId) {
-      //   //   delete allPlacedEntities[uuid];
-      //   //   //scene.remove(modelDasRemovedWerdenSoll) 
-      //   //   scene.remove(allPlacedEntities[uuid])
-      //   //   //renderer.render(scene, camera)
-      //   //   break; 
-      //   // }
-      // }   
-    }
-
-  
-  }
-
-
 
 </script>
 

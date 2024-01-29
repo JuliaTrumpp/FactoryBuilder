@@ -4,7 +4,6 @@ import { backendUrl } from '@/utils/config/config'
 import { turnLeft, turnRight, reverseCombinedPipe, pointsOverlapping, weldPointsOfCombinedPipes } from '@/utils/placedEntities/placedEntities'
 import { getCenterPoint, rotateModelFromXtoY } from '@/utils/rotation/rotate'
 import { placeEntity, replaceEntity } from '@/utils/threeJS/entityManipulation'
-import { roundVector } from '@/utils/threeJS/helpFunctions'
 import * as THREE from 'three'
 import type { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
@@ -25,8 +24,9 @@ export class PlacedEntities {
    * Single Entity Operations
    */
   public add = (entity: IEntity) => {
-    console.log(this.allEntities);
     this.allEntities.push(entity)
+    if (entity.orientation === "North") return
+    rotateModelFromXtoY("North", entity.orientation, entity.threejsObject, this, false)
   }
 
   public updateLastId = (id: number) => {
@@ -35,9 +35,10 @@ export class PlacedEntities {
       this.allEntities[lastIndex].id = id
     }
   }
+
   public pop = () => {
     return this.allEntities.pop()
-  
+
   }
 
   public getByUUID = (uuid: string): IEntity => {
@@ -53,7 +54,7 @@ export class PlacedEntities {
   }
 
   public updateByID = async (id: number, situation?: string, gltf?: string) => {
-    let entity, entityNew, position; 
+    let entity, entityNew, position;
     switch(situation) {
       case "DELETE":
         entity = this.getByID(id)
@@ -73,7 +74,7 @@ export class PlacedEntities {
       case "ROTATE":
         entity = this.getByID(id)
         entityNew = await getEntityInFactory(entity.id)
-        rotateModelFromXtoY(entity.orientation, entityNew.orientation, entity.threejsObject, this)
+        rotateModelFromXtoY(entity.orientation, entityNew.orientation, entity.threejsObject, this, false)
         break;
       case "ADDNEW":
          entityNew = await getEntityInFactory(id)
@@ -88,7 +89,7 @@ export class PlacedEntities {
           position,
           backendUrl + gltf
       ).then((threejsObject) => {
-      
+
           this.add({
             id: id,
             orientation: 'North',
@@ -97,7 +98,7 @@ export class PlacedEntities {
             threejsObject: threejsObject
           })
       })
-        break; 
+        break;
     }
   }
 

@@ -7,15 +7,13 @@ import de.swtpro.factorybuilder.DTO.entity.PropertyDTO;
 import de.swtpro.factorybuilder.DTO.entity.RotateRequestDTO;
 import de.swtpro.factorybuilder.DTO.entity.saveScriptDTO;
 import de.swtpro.factorybuilder.DTO.factory.DeleteRequestDTO;
-import de.swtpro.factorybuilder.DTO.factory.FactoryEnterDTO;
-import de.swtpro.factorybuilder.entity.Factory;
 import de.swtpro.factorybuilder.entity.Model;
 import de.swtpro.factorybuilder.entity.model.AbstractModel;
 import de.swtpro.factorybuilder.messaging.FrontendMessageEvent;
 import de.swtpro.factorybuilder.messaging.FrontendMessageEvent.MessageEventType;
 import de.swtpro.factorybuilder.messaging.FrontendMessageEvent.MessageOperationType;
 import de.swtpro.factorybuilder.messaging.FrontendMessageService;
-import de.swtpro.factorybuilder.service.FactoryService;
+
 
 import de.swtpro.factorybuilder.service.ModelService;
 import de.swtpro.factorybuilder.service.model.AbstractModelService;
@@ -60,7 +58,7 @@ public class EntityRestAPIController {
         Model model = modelService.getByName(placeRequestDTO.modelId()).orElseThrow();
         String username = placeRequestDTO.user();
         AbstractModel abstractModel = abstractModelService.createPlacedModel(model, pos, placeRequestDTO.factoryID());
-        
+
 
        if (abstractModel == null) {
 
@@ -86,9 +84,9 @@ public class EntityRestAPIController {
     @PostMapping("/rotate")
     public ResponseEntity<Boolean> rotate(@RequestBody RotateRequestDTO rotateRequestDTO) {
         boolean rotated = manipulateAbstractModelService.rotateModel(rotateRequestDTO.id(), rotateRequestDTO.orientation());
-        
+
         LOGGER.info("rotate entity: " + String.valueOf(rotateRequestDTO.id()) + " is " + String.valueOf(rotated));
-        
+
         frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, rotateRequestDTO.id(), MessageOperationType.ROTATE), rotateRequestDTO.factoryID());
         return ResponseEntity.ok(rotated);
     }
@@ -137,10 +135,10 @@ public class EntityRestAPIController {
             }
 
         } catch(NoSuchElementException e) {
-            LOGGER.info("Script konnte nicht gespeichert werden, da es modelId in DB nicht gefunden wurde.", e.getCause());
+            LOGGER.info("Script konnte nicht aus DB geholt werden, da diese modelId in DB nicht gefunden wurde.", e.getCause());
         }
 
-        return ResponseEntity.ok("default Script, weil script nicht aus DB gezogen werden konnte.");
+        return ResponseEntity.ok("");
     }
 
 
@@ -161,7 +159,6 @@ public class EntityRestAPIController {
         } catch (NoSuchElementException e) {
             LOGGER.info("ModelId wurde in DB nicht gefunden -> Script kann nicht gespeichert werden.", e.getCause());
         }
-
         // nur script wird in DB gespeichert, user- & systemProperties werden bei jedem get-Aufruf neu aus Skript interpretiert
     }
 
@@ -200,7 +197,6 @@ public class EntityRestAPIController {
             AbstractModel abstractModel = abstractModelService.getPlacedModelById(entityId).orElseThrow();
             Model m = modelService.getByID(abstractModel.getId()).orElse(null);
 
-            assert abstractModel != null;
             PlacedModelDTO dto = new PlacedModelDTO(
                     abstractModel.getFactory().getFactoryID(),
                     abstractModel.getId(),
@@ -208,7 +204,7 @@ public class EntityRestAPIController {
                     abstractModel.getRootPos().getX(),
                     abstractModel.getRootPos().getY(),
                     abstractModel.getRootPos().getZ(),
-                    m.getModelFile(), 
+                    m.getModelFile(),
                     m.getName()
                     // Skript muss nicht mitgeladen werden, da es immer direkt aus der DB geladen wird, sobald man die SkriptingView oeffnet
             );
