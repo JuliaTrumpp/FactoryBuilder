@@ -122,10 +122,10 @@ public class EntityRestAPIController {
             //return scriptContent;
 
         } catch(NoSuchElementException e) {
-            LOGGER.info("Script konnte nicht gespeichert werden, da es modelId in DB nicht gefunden wurde.", e.getCause());
+            LOGGER.info("Script konnte nicht aus DB geholt werden, da diese modelId in DB nicht gefunden wurde.", e.getCause());
         }
 
-        return ResponseEntity.ok("default Script, weil script nicht aus DB gezogen werden konnte.");
+        return ResponseEntity.ok("");
     }
 
 
