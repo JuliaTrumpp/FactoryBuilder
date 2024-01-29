@@ -208,14 +208,9 @@ public class EntityRestAPIController {
                     abstractModel.getRootPos().getX(),
                     abstractModel.getRootPos().getY(),
                     abstractModel.getRootPos().getZ(),
-                    //abstractModel.getScript(),
-                    m.getModelFile(), // Füge den Pfad hinzu, wie erforderlich (? Kommentar von getAll in factoryAPI
-                                      // übernommen)
+                    m.getModelFile(), 
                     m.getName()
-            // hier muss wenn script branch gemerged ist, noch abstractModel.getScript() hin
-            // -> DTO abändern...
-            // -> an jeder anderen Stelle wo Entities aus BE geholt werden z.B auch
-            // getAll(), load() etc.
+                    // Skript muss nicht mitgeladen werden, da es immer direkt aus der DB geladen wird, sobald man die SkriptingView oeffnet
             );
 
             return dto;
