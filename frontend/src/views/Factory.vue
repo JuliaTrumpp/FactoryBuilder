@@ -1,27 +1,32 @@
 <script setup lang="ts">
 import type {Ref} from 'vue'
 import {onBeforeUnmount, onMounted, onUnmounted, provide, ref, watch} from 'vue'
-import type {IEntity, IVector3} from '@/types/global'
+import type {IVector3} from '@/types/global'
 import type {IBackendEntity, IBackendEntityPreview, IEntityDelete} from '@/types/backendTypes'
 import * as THREE from 'three'
-import {CameraControlsManager} from '@/classes/cameraControls/CameraControlsManager'
-import {getIntersectionsMouse} from '@/utils/threeJS/3d'
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js'
+import { CameraControlsManager } from '@/classes/cameraControls/CameraControlsManager'
+import { PlacedEntities } from '@/classes/placedEntities/placedEntities'
+import { getIntersectionsMouse } from '@/utils/threeJS/3d'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import CircularMenu from '@/components/factory-ui/CircularMenu.vue'
+import { AnimationManager } from '@/classes/animation/animationManager'
 import {
   factoryImageUpdate,
   moveRequest,
   placeRequest,
-  rotationRequest
+  rotationRequest,
+  sendScriptingToBackend
 } from '@/utils/backend-communication/postRequests'
-import {entityDeleteRequest} from '@/utils/backend-communication/deleteRequest'
-import {getAllEntities, getAllEntitiesInFactory} from '@/utils/backend-communication/getRequests'
-import {backendUrl} from '@/utils/config/config'
-import {CameraMode} from '@/enum/CameraMode'
-import {ManipulationMode} from '@/enum/ManipulationMode'
+import { entityDeleteRequest } from '@/utils/backend-communication/deleteRequest'
+import { getAllEntities, getAllEntitiesInFactory } from '@/utils/backend-communication/getRequests'
+import { backendUrl } from '@/utils/config/config'
+import { CameraMode } from '@/enum/CameraMode'
+import { ManipulationMode } from '@/enum/ManipulationMode'
 
 import {
   createRoom,
+  drawBox,
+  drawLine,
   moveHighlight,
   selectionObject,
   updateHighlightModel
@@ -33,13 +38,15 @@ import {
   replaceEntity,
   makeObjectTransparent
 } from '@/utils/threeJS/entityManipulation'
-import {rotateModel, rotateModelFromXtoY, turnLeft, turnRight} from '@/utils/rotation/rotate'
-import {useFactory} from '@/utils/composition-functions/useFactory'
+import { rotateModel, rotateModelFromXtoY } from '@/utils/rotation/rotate'
+import { useFactory } from '@/utils/composition-functions/useFactory'
 import MenuBar from '@/components/factory-ui/MenuBar.vue'
-import FactoryMenu from "@/components/factory-ui/SideBar.vue";
-import {useSessionUser} from "@/utils/composition-functions/useSessionUser";
-import {useError} from "@/utils/composition-functions/useError";
-import StompClientBuilder from '@/classes/messaging/StompClientBuilder' 
+import FactoryMenu from '@/components/factory-ui/SideBar.vue'
+import {useSessionUser} from '@/utils/composition-functions/useSessionUser'
+import {useError} from '@/utils/composition-functions/useError'
+import ScriptContainer from '@/components/factory-ui/ScriptContainer.vue'
+import StompClientBuilder from '@/classes/messaging/StompClientBuilder'
+import type { IEntity } from '@/types/placedEntites'
 
 /**
  * Config
@@ -74,8 +81,9 @@ let sizes: {
   height: number
   ratio: number
 }
-let allPlacedEntities: { [uuid: string]: IEntity } = {}
 let originalOrientation = ''
+let placedEntities: PlacedEntities
+let animationManager: AnimationManager
 /**
  * THREE.JS Specific
  */
@@ -92,6 +100,9 @@ let previousTime: number = 0
 let currentMode: CameraMode | null
 let pivot: THREE.Object3D
 
+let showScripting = ref(false)
+let showMenuBar = ref(true)
+
 /**
  * Setup
  **/
@@ -101,7 +112,7 @@ const setupScene = (): void => {
   scene.background = new THREE.Color('#12111A')
 }
 
-const setupRenderer = ():void => {
+const setupRenderer = (): void => {
   renderer = new THREE.WebGLRenderer()
   renderer.setSize(sizes.width, sizes.height)
 }
@@ -122,7 +133,13 @@ const setupLights = (): void => {
   scene.add(directionalLight)
 }
 
-const setupControls = (): void => {
+const setupLoader = (): void => {
+  loader = new GLTFLoader()
+}
+
+const setupManager = (): void => {
+  placedEntities = new PlacedEntities(scene)
+  animationManager = new AnimationManager(placedEntities, scene, loader)
   ccm = new CameraControlsManager(camera, renderer.domElement, CameraMode.ORBIT)
   currentMode = ccm.currentMode
 }
@@ -181,9 +198,10 @@ const onToggleMenuVisibility = (): void => {
 
 const onToggleSideMenuVisibility = (open: boolean): void => {
   if (open) showSideMenu.value = !showSideMenu.value
-  else setTimeout(() => {
-    showSideMenu.value = !showSideMenu.value;
-  }, 500)
+  else
+    setTimeout(() => {
+      showSideMenu.value = !showSideMenu.value
+    }, 500)
 }
 
 /**
@@ -192,48 +210,31 @@ const onToggleSideMenuVisibility = (open: boolean): void => {
  * @returns {void}
  */
 const onChangeEntityClicked = (situation: string): void => {
-  // When one circle option was clicked
   switch (situation) {
     case 'delete':
-      // Delete Request
       entityDeleteRequest({
         factoryId: factoryID.value,
-        id: allPlacedEntities[currentObjectSelected.uuid].id
-      }).then((success) => {
-        if (success) {
-          delete allPlacedEntities[currentObjectSelected.uuid]
-          // Remove from scene
-          scene.remove(currentObjectSelected)
-          //if (currentObjectSelected.parent.type !== 'Scene')
-          //scene.remove(currentObjectSelected.parent)
-        }
-      }).catch((error: Error) => {
-        console.error("An error occurred during entity deletion:", error)
+        id: placedEntities.getByUUID(currentObjectSelected.uuid).id
       })
+          .then((success) => {
+            if (success) {
+              placedEntities.deleteByUUID(currentObjectSelected.uuid)
+              // Remove from scene
+              scene.remove(currentObjectSelected)
+              //if (currentObjectSelected.parent.type !== 'Scene')
+              //scene.remove(currentObjectSelected.parent)
+            }
+          })
+          .catch((error: Error) => {
+            console.error('An error occurred during entity deletion:', error)
+          })
 
       break
 
     case 'rotate':
       // Set mode
-      manipulationMode.value = ManipulationMode.ROTATE
-
-      // set pivot point for future rotation
-      if (!pivot || currentObjectSelected !== pivot.children[0]) {
-        if (currentObjectSelected.parent === null) return
-        if (currentObjectSelected.parent.type === 'Object3D') {
-          pivot = currentObjectSelected.parent
-          return
-        }
-        let box = new THREE.Box3().setFromObject(currentObjectSelected)
-        let center = new THREE.Vector3()
-        box.getCenter(center)
-        currentObjectSelected.position.sub(new THREE.Vector3(center.x, center.y, 0))
-        pivot = new THREE.Object3D()
-        pivot.position.set(center.x, center.y, currentObjectSelected.position.z)
-        scene.add(pivot)
-        pivot.add(currentObjectSelected)
-      }
-      break
+      manipulationMode.value = ManipulationMode.ROTATE;
+      break;
 
     case 'move':
       // Set move mode
@@ -246,27 +247,27 @@ const onChangeEntityClicked = (situation: string): void => {
 
     case 'script':
       console.log('scripting Entity')
+      showScripting.value = !showScripting.value
+      showMenuBar.value = false
+      console.log("ModelIDDDDDD: ", placedEntities.getByUUID(currentObjectSelected.uuid).id)
       break
 
     case 'clone':
       if (allEntities.value) {
         // Find highlight by name
         activeEntity.value = allEntities.value.find(
-            (obj) => obj.name === allPlacedEntities[currentObjectSelected.uuid].modelId
+          (obj) => obj.name === placedEntities.getByUUID(currentObjectSelected.uuid).modelId
         )
 
         // If it was the same, update manually
         if (activeEntity.value)
-          updateHighlightModel(
-              highlight,
-              backendUrl + activeEntity.value.modelFile,
-              scene,
-              loader
-          ).then((newHighlight: THREE.Object3D) => {
-            highlight = newHighlight
-          }).catch((error: Error) => {
-          console.error("An error occurred during entity cloning:", error)
-        })
+          updateHighlightModel(highlight, backendUrl + activeEntity.value.modelFile, scene, loader)
+            .then((newHighlight: THREE.Object3D) => {
+              highlight = newHighlight
+            })
+            .catch((error: Error) => {
+              console.error('An error occurred during entity cloning:', error)
+            })
 
         // Normal set mode
         manipulationMode.value = ManipulationMode.SET
@@ -274,6 +275,31 @@ const onChangeEntityClicked = (situation: string): void => {
       console.log('cloning Entity')
       break
   }
+}
+
+const onAnimationStart = (event: any) => {
+  animationManager.startAnimation()
+}
+
+const onClearAllClick = (event: any) => {
+  placedEntities.getAllEntities().forEach((entitie: IEntity) => {
+    entityDeleteRequest({
+      factoryId: factoryID.value,
+      id: entitie.id
+    })
+        .then((success) => {
+          if (success) {
+            placedEntities.deleteByUUID(entitie.uuid)
+            scene.remove(entitie.threejsObject)
+          }
+        })
+        .catch((error: Error) => {
+          console.error('An error occurred during entity deletion:', error)
+        })
+  })
+}
+
+const onDebugClick = (event: any) => {
 }
 
 /**
@@ -298,8 +324,8 @@ const handleKeyDown = (event: KeyboardEvent) => {
     case 'V':
       if (manipulationMode.value === ManipulationMode.ROTATE) {
         rotationRequest({
-          id: allPlacedEntities[currentObjectSelected.uuid].id,
-          orientation: allPlacedEntities[currentObjectSelected.uuid].orientation,
+          id: placedEntities.getByUUID(currentObjectSelected.uuid).id,
+          orientation: placedEntities.getByUUID(currentObjectSelected.uuid).orientation,
           factoryId: factoryID.value
         })
             .then((res) => res.json())
@@ -307,14 +333,13 @@ const handleKeyDown = (event: KeyboardEvent) => {
               if (!success) {
                 rotateModelFromXtoY(
                     originalOrientation,
-                    allPlacedEntities[currentObjectSelected.uuid].orientation,
-                    pivot
+                    placedEntities.getByUUID(currentObjectSelected.uuid).orientation,
+                    currentObjectSelected,
+                    placedEntities
                 )
               }
             })
       }
-
-
       showDynamicDiv.value = false
       showCircMenu.value = false
       if (currentObjectSelected) highlightObjectWithColor(currentObjectSelected, false)
@@ -341,24 +366,19 @@ const handleKeyDown = (event: KeyboardEvent) => {
           break
       }
       break
-
     case 'ARROWLEFT':
       switch (manipulationMode.value) {
         case ManipulationMode.ROTATE:
-          rotateModel('left', pivot)
-          allPlacedEntities[currentObjectSelected.uuid].orientation = turnLeft(
-              allPlacedEntities[currentObjectSelected.uuid].orientation
-          )
+          rotateModel('left', currentObjectSelected)
+          placedEntities.rotateEntityByUUID(currentObjectSelected.uuid, 'left')
       }
       break
 
     case 'ARROWRIGHT':
       switch (manipulationMode.value) {
         case ManipulationMode.ROTATE:
-          rotateModel('right', pivot)
-          allPlacedEntities[currentObjectSelected.uuid].orientation = turnRight(
-              allPlacedEntities[currentObjectSelected.uuid].orientation
-          )
+          rotateModel('right', currentObjectSelected)
+          placedEntities.rotateEntityByUUID(currentObjectSelected.uuid, 'right')
       }
       break
 
@@ -374,6 +394,7 @@ const handleKeyDown = (event: KeyboardEvent) => {
 const handleMouseMove = (event: MouseEvent) => {
   // Get all intersections with mouse and world
   const intersections = getIntersectionsMouse(event, camera, scene)
+
   // Update the highlighter
   if (highlight && manipulationMode.value === ManipulationMode.SET) {
     // Object model wird asynchron geladen
@@ -413,6 +434,22 @@ const handleClick = (event: any) => {
   switch (manipulationMode.value) {
     case ManipulationMode.SET:
       if (activeEntity.value && !highlightIsIntersectingWithObjects.value) {
+          placeEntity(
+              loader,
+              scene,
+              highlight.position,
+              backendUrl + activeEntity.value.modelFile
+          ).then((threejsObject) => {
+            if (activeEntity.value) {
+              placedEntities.add({
+                id: 0,
+                orientation: 'North',
+                modelId: activeEntity.value.name,
+                uuid: threejsObject.uuid,
+                threejsObject: threejsObject
+              })
+            }
+          })
         placeRequest({
           x: highlight.position.x,
           y: highlight.position.y,
@@ -426,36 +463,26 @@ const handleClick = (event: any) => {
             .then((id) => {
               console.log("Alter EY: ", id)
               if (id === -1) return
-              if (activeEntity.value) {
-                placeEntity(
-                    loader,
-                    scene,
-                    highlight.position,
-                    backendUrl + activeEntity.value.modelFile
-                ).then((uuid) => {
-                  if (activeEntity.value)
-                      // ...bruh
-                    allPlacedEntities[uuid] = {
-                      id: id,
-                      orientation: 'North',
-                      modelId: activeEntity.value.name
-                    }
-                })
-              }
+              placedEntities.updateLastId(id)
+
             })
             .catch((error) => {
-              useError().updateErrorMessage("Can't Place Entity", "factoryMissing")
-              if (!useError().showErrorMessage.value) useError().toggleShowErrorMessage()
+              const lastElement = placedEntities.pop()
+              if (lastElement) {
+                useError().updateErrorMessage("Can't Place Entity, because it intersects with other object or is out of bounds")
+                if (!useError().showErrorMessage.value) useError().toggleShowErrorMessage()
+                scene.remove(lastElement.threejsObject)
+              }
               console.error('Es gab einen Fehler:', error)
             })
       }
       break
     case ManipulationMode.MOVE:
       moveRequest({
-        x: highlight.position.x,
-        y: highlight.position.y,
-        z: highlight.position.z,
-        id: allPlacedEntities[currentObjectSelected.uuid].id,
+        x: currentObjectSelected.position.x,
+        y: currentObjectSelected.position.y,
+        z: currentObjectSelected.position.z,
+        id: placedEntities.getByUUID(currentObjectSelected.uuid).id,
         factoryId: factoryID.value
       })
           .then((response) => response.json())
@@ -466,6 +493,8 @@ const handleClick = (event: any) => {
               manipulationMode.value = ManipulationMode.IDLE
             } else {
               console.log('not moved')
+              replaceEntity(currObjSelectedOriginPos, currentObjectSelected, currentObjectSelected)
+              manipulationMode.value = ManipulationMode.IDLE
             }
           })
       break
@@ -479,10 +508,10 @@ const handleContextMenu = (event: MouseEvent) => {
   const intersections = getIntersectionsMouse(event, camera, scene)
   const result = selectionObject(currentObjectSelected, lastObjectSelected, intersections)
   if (result && typeof result === 'object') {
-    const {worked, currObj, lastObj} = result
+    const { worked, currObj, lastObj } = result
     if (worked) {
       currentObjectSelected = currObj
-      originalOrientation = allPlacedEntities[currentObjectSelected.uuid].orientation
+      originalOrientation = placedEntities.getByUUID(currentObjectSelected.uuid).orientation
 
       lastObjectSelected = lastObj
       if (dynamicDiv) {
@@ -517,7 +546,7 @@ const handleMouseRelease = () => {
 
 /**
  * Watcher
- * **/
+ **/
 
 watch(activeEntity, () => {
   manipulationMode.value = ManipulationMode.SET
@@ -537,8 +566,6 @@ watch(currentCameraMode, () => {
   } else {
     makeObjectTransparent(false, highlight)
   }
-
-  console.log(highlight)
 })
 
 
@@ -560,30 +587,33 @@ onMounted(() => {
   dynamicDiv = document.getElementById('dynamicDiv')
 
   // Renderer gets appended to target
-  getAllEntities().then((json) => {
-    // Alle entittys sind nun zugänglich für uns
-    allEntities.value = json
-    // Active entity ändern
-    activeEntity.value = allEntities.value[0]
-  }).catch((error: Error) => {
-    console.error("An error occurred during fetching all Entities: ", error)
-  })
+  getAllEntities()
+      .then((json) => {
+        // Alle entittys sind nun zugänglich für uns
+        allEntities.value = json
+        // Active entity ändern
+        activeEntity.value = allEntities.value[0]
+      })
+      .catch((error: Error) => {
+        console.error('An error occurred during fetching all Entities: ', error)
+      })
 
   // Load all
   getAllEntitiesInFactory(factoryID.value).then((backendEntitys: IBackendEntity[]) => {
-    console.log('load all factorys ', factoryID.value)
     backendEntitys.forEach((backendEntity) => {
       placeEntity(
           loader,
           scene,
           {x: backendEntity.x, y: backendEntity.y, z: backendEntity.z},
           backendUrl + backendEntity.path
-      ).then((uuid) => {
-        allPlacedEntities[uuid] = {
+      ).then((threejsObject) => {
+        placedEntities.add({
           id: backendEntity.id,
           orientation: backendEntity.orientation,
-          modelId: backendEntity.modelId
-        }
+          modelId: backendEntity.modelId,
+          threejsObject: threejsObject,
+          uuid: threejsObject.uuid
+        })
       })
     })
   })
@@ -592,15 +622,17 @@ onMounted(() => {
   animate(0)
   useFactory().toggleIsFactoryImageUpToDate()
 })
+
 onBeforeUnmount(() => {
   factoryImageUpdate(factoryID.value, captureScreenshot()).then((success: boolean) => {
     if (success) useFactory().toggleIsFactoryImageUpToDate()
-    //demo   setTimeout(() => {
-    //   useFactory().toggleIsFactoryImageUpToDate()
+        //demo   setTimeout(() => {
+        //   useFactory().toggleIsFactoryImageUpToDate()
     // }, 5000)
     else console.log("didn't save image")
   })
 })
+
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
   window.removeEventListener('keydown', handleKeyDown)
@@ -621,10 +653,10 @@ const init = () => {
   setupRenderer()
   setupCamera()
   setupLights()
-  setupControls()
   setupLoader()
   setupStompClientBuilder()
   createRoom(factorySize.value.x, factorySize.value.y, factorySize.value.z, scene)
+  setupManager()
 }
 
 const animate = (timestamp: any) => {
@@ -639,6 +671,27 @@ const animate = (timestamp: any) => {
   renderer.render(scene, camera)
 }
 
+const saveAndCloseScript = (scriptContent: string) => {
+  showScripting.value = !showScripting.value
+  showMenuBar.value = true
+
+  let modelIdForSavingTheScript = placedEntities.getByUUID(currentObjectSelected.uuid).id
+  console.log("objekt: ", placedEntities.getByUUID(currentObjectSelected.uuid))
+
+  // schicke den string mit den kompletten script an das backend (mit der zugehörigen modelId)
+  console.log("Das wird an ScriptContent ans BE geschickt: ", scriptContent);
+  sendScriptingToBackend(modelIdForSavingTheScript, scriptContent);
+}
+
+const closeScript = () => {
+  showScripting.value = !showScripting.value
+  showMenuBar.value = true
+}
+
+
+/**
+ * Start Game
+ **/
 
 init()
 
@@ -693,6 +746,8 @@ import currentObjectSelected from '@/views/Factory.vue'
   
   }
 
+
+
 </script>
 
 <template>
@@ -704,7 +759,31 @@ import currentObjectSelected from '@/views/Factory.vue'
           @changeEntity="onChangeEntityClicked"
       ></CircularMenu>
     </div>
-    <div class="debug-bar"></div>
+
+    <button
+        @click="onAnimationStart"
+        id="ignore"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded absolute top-10 left-10 cursor-pointer"
+    >
+      Start Animation
+    </button>
+
+    <button
+        @click="onClearAllClick"
+        id="ignore"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded absolute top-20 left-10 cursor-pointer"
+    >
+      ClearAll
+    </button>
+
+    <button
+        @click="onDebugClick"
+        id="ignore"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded absolute top-0 left-0 cursor-pointer"
+    >
+      Debug
+    </button>
+
     <MenuBar
         id="ignore"
         v-if="allEntities && currentCameraMode === 1"
@@ -715,16 +794,14 @@ import currentObjectSelected from '@/views/Factory.vue'
       "
     />
   </div>
-  <FactoryMenu :username="useSessionUser().sessionUser" :factory-name="factoryName" v-if="showSideMenu"
-               @closeSideBar="onToggleSideMenuVisibility"></FactoryMenu>
+  <ScriptContainer v-if="showScripting" :model="placedEntities.getByUUID(currentObjectSelected.uuid)"
+                   @saveAndClose="saveAndCloseScript" @closeScript="closeScript()"/>
+  <!-- hier wird methode noch default weret für scriptContent mitgegeben -->
+  <FactoryMenu
+      :username="useSessionUser().sessionUser"
+      :factory-name="factoryName"
+      :factory-i-d="factoryID"
+      v-if="showSideMenu"
+      @closeSideBar="onToggleSideMenuVisibility"
+  ></FactoryMenu>
 </template>
-
-<style>
-.debug-bar {
-  position: absolute;
-  top: 60px;
-  left: 60px;
-  color: #282b30;
-  font-size: 20px;
-}
-</style>

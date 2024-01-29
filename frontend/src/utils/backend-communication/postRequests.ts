@@ -76,7 +76,6 @@ export const factoryImageUpdate = async (factoryID: number, screenshot: string) 
             factoryID: factoryID,
             screenshot: screenshot
         })
-        console.log(requestBody)
         const response = await fetch(url, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -165,3 +164,99 @@ export const logoutUser = async () => {
     }
 }
 
+
+export const sendScriptingToBackend = async (modelId: number, scriptContent: string) => {
+    try {
+        const requestBody = JSON.stringify({
+            modelId: modelId,
+            scriptContent: scriptContent
+        })
+
+        console.log("sendScriptingToBackend() requestBody: ", requestBody);
+
+        const response = await fetch(backendUrl + '/api/entity/postScript/' + modelId, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: requestBody,
+            credentials: 'include'
+        })
+
+        console.log("sendScriptingToBackend() response: ", response);
+
+        if (!response.ok) throw new Error(response.statusText)
+
+        // return await response.json() // diese klappt nicht
+        const res = await response.text()
+        // console.log(res)
+        return res
+
+    } catch (err) {
+        console.error(err)
+        return false
+    }
+}
+
+
+export const enterFactory = async (factoryID: number, userName: string) => {
+    
+    try {
+        console.log(`Entering factory with ID: ${factoryID} and username: ${userName}`);
+        const url = backendUrl + '/api/factory/enter'
+        const requestBody = JSON.stringify({
+            factoryID: factoryID,
+            userName: userName
+        });
+        console.log(requestBody); // Log the payload
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: requestBody,
+        });
+
+        console.log('Response status:', response.status);
+        const responseBody = await response.text();
+        console.log('Response body:', responseBody);
+
+        if (!response.ok) {
+            return "Entering unsuccessful";
+        } else {
+            console.log(response);
+        }
+            
+    } catch (error) {
+        console.error('Error while entering factory: ', error);
+        return "Error entering factory";
+    }
+}
+
+export const leaveFactory = async (factoryID: number, userName: string) => {
+    
+    try {
+        console.log(`Leaving factory with ID: ${factoryID} and username: ${userName}`);
+        const url = backendUrl + '/api/factory/leave'
+        const requestBody = JSON.stringify({
+            factoryID: factoryID,
+            userName: userName
+        });
+        console.log(requestBody); // Log the payload
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: requestBody,
+        });
+
+        console.log('Response status:', response.status);
+        const responseBody = await response.text();
+        console.log('Response body:', responseBody);
+
+        if (!response.ok) {
+            return "Leaving unsuccessful";
+        } else {
+            console.log(response);
+        }
+            
+    } catch (error) {
+        console.error('Error while leaving factory: ', error);
+        return "Error leaving factory";
+    }
+}

@@ -3,14 +3,8 @@ package de.swtpro.factorybuilder.service;
 
 import org.springframework.stereotype.Service;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.util.Base64;
-import javax.imageio.ImageIO;
-import java.io.ByteArrayInputStream;
 
-
-import java.io.IOException;
 @Service
 public class ImgConverterService {
 

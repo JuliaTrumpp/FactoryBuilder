@@ -1,11 +1,11 @@
-import type { LoadingManager } from "three";
+import type { ICompass } from "@/classes/placedEntities/placedEntities";
 
 export interface IBackendEntity {
     x: number;
     y: number;
     z: number;
     path: string; 
-    orientation: string;
+    orientation: ICompass;
     factoryid: string;
     id:number;
     modelId: string;
@@ -82,6 +82,12 @@ export interface IEntityMove {
     y: number;
     z: number;
 }
+
+// Model scripting
+export interface IModelScripting {
+    id: number;
+}
+ 
 export interface IFactory {
     id: number;
     name: string;
@@ -106,4 +112,14 @@ export interface IBackendMessageEvent{
     eventType: string; 
     eventID: number; 
     operationType: string; 
+}
+
+export interface ISystemProperty{
+    property: string;
+    value: string;
+}
+
+export interface IUserProperty{
+    property: string;
+    value: string;
 }

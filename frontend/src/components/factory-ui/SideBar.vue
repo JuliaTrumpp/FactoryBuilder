@@ -1,22 +1,58 @@
 <script setup lang="ts">
-import {type Ref, ref, watch} from 'vue'
-import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
-import { XMarkIcon } from '@heroicons/vue/24/outline'
+import {onMounted, ref, type Ref, watch} from 'vue'
+import {Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot} from '@headlessui/vue'
+import {XMarkIcon} from '@heroicons/vue/24/outline'
 import router from "@/router";
 import Button from "@/components/button/Button.vue";
-import {logoutUser} from "@/utils/backend-communication/postRequests";
+import {leaveFactory} from "@/utils/backend-communication/postRequests";
 import {useSessionUser} from "@/utils/composition-functions/useSessionUser";
+import {getAllUsersInFactory} from '@/utils/backend-communication/getRequests';
+
 const emit = defineEmits<{
   closeSideBar: [boolean];
 }>()
 const props = defineProps<{
   username: Ref<string>,
   factoryName: string
+  factoryID: number
 }>()
+
 const open = ref(true)
 watch(open, () => {
   if (!open.value) emit('closeSideBar', false)
 })
+
+
+const factoryUsers = ref<{ username: string }[]>([]);
+
+const leaveAndNavigate = async (route : string) => {
+ 
+
+  const factoryID = props.factoryID
+  const userName = props.username.value
+
+  const leaveResult = await leaveFactory(factoryID, userName);
+
+  if (leaveResult === "Leaving unsuccessful") {
+    console.error("Leaving unsuccessful")
+  } else if (leaveResult === "Error leaving factory"){
+    console.error("Error leaving factory")
+  }else {
+    router.push(route)
+  }
+}
+
+onMounted(async () => {
+  
+  const factoryId = props.factoryID; 
+  try {
+    factoryUsers.value = await getAllUsersInFactory(factoryId);
+  } catch (error) {
+    console.error('Error fetching factory users:', error);
+  }
+});
+
+
 </script>
 
 <template>
@@ -33,7 +69,7 @@ watch(open, () => {
               <DialogPanel class="pointer-events-auto relative w-screen max-w-sm">
                 <TransitionChild as="template" enter="ease-in-out duration-500" enter-from="opacity-0" enter-to="opacity-100" leave="ease-in-out duration-500" leave-from="opacity-100" leave-to="opacity-0">
                   <div class="absolute left-0 top-0 -ml-8 flex pr-2 pt-4 sm:-ml-10 sm:pr-4" id="ignore">
-                    <button type="button" class="relative rounded-md text-gray-300 hover:text-white bg-transparent border-transparent focus:outline-none focus:ring-2 focus:ring-white" @click="open = false" id="ignore">
+                    <button type="button" class="relative rounded-md text-gray-300 hover:text-white bg-transparent border-transparent focus:outline-none focus:ring-2 focus:ring-white" @click="open = false" id="ignore" link="">
                       <span class="absolute -inset-2.5" id="ignore"/>
                       <span class="sr-only" id="ignore">Close panel</span>
                       <XMarkIcon class="h-6 w-6" aria-hidden="true" id="ignore"/>
@@ -54,21 +90,29 @@ watch(open, () => {
                     </DialogTitle>
                   </div>
                   <div class="relative mt-6 flex-1 flex flex-col px-4 sm:px-6 gap-3" id="ignore">
-                    <button type="button" class="text-white bg-gradient-to-r from-ourPurple to-ourPurpleDarker hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 font-bold rounded-3xl text-lg px-5 py-2.5 text-center me-2 mb-2" id="ignore" @click="router.push('/')" link="">
+                    <button type="button" class="text-white bg-gradient-to-r from-ourPurple to-ourPurpleDarker hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 font-bold rounded-3xl text-lg px-5 py-2.5 text-center me-2 mb-2" id="ignore" @click="leaveAndNavigate('/')" link="">
                       back to home
                     </button>
-                    <button type="button" class="text-white bg-gradient-to-r from-ourPurple to-ourPurpleDarker hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 font-bold rounded-3xl text-lg px-5 py-2.5 text-center me-2 mb-2" id="ignore" @click="router.push('/enter')" link="">
+                    <button type="button" class="text-white bg-gradient-to-r from-ourPurple to-ourPurpleDarker hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 font-bold rounded-3xl text-lg px-5 py-2.5 text-center me-2 mb-2" id="ignore" @click="leaveAndNavigate('/enter')" link="">
                       back to enter factories
                     </button>
-                    <button type="button" class="text-white bg-gradient-to-r from-ourPurple to-ourPurpleDarker hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 font-bold rounded-3xl text-lg px-5 py-2.5 text-center me-2 mb-2" id="ignore" @click="router.push('/create')" link="">
+                    <button type="button" class="text-white bg-gradient-to-r from-ourPurple to-ourPurpleDarker hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-purple-300 dark:focus:ring-purple-800 font-bold rounded-3xl text-lg px-5 py-2.5 text-center me-2 mb-2" id="ignore" @click="leaveAndNavigate('/create')" link="">
                       back to create factories
                     </button>
                   </div>
+                  <div class="relative mb-11 align-bottom text-lg flex flex-col px-4 sm:px-6 gap-2.5">
+                    <p>Current users:</p> 
+                      <ul>
+                        <li v-for="user in factoryUsers" :key="user.username">{{ user.username }}</li>
+                      </ul>
+                  </div>
+                  
                   <div class="relative mb-11 align-bottom text-lg flex flex-col px-4 sm:px-6 gap-2.5" id="ignore">
                     <p>Logged in as user {{props.username}}</p>
                     <button type="button" class="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-bold rounded-3xl text-lg px-5 py-2.5 text-center me-2 mb-2" id="ignore" @click="useSessionUser().performLogout()" link="">
                       logout
                     </button>
+                    
                   </div>
                 </div>
               </DialogPanel>
