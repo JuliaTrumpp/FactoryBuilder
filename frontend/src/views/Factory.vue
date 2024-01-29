@@ -733,6 +733,7 @@ const closeScript = () => {
   <FactoryMenu
       :username="useSessionUser().sessionUser"
       :factory-name="factoryName"
+      :factory-i-d="factoryID"
       v-if="showSideMenu"
       @closeSideBar="onToggleSideMenuVisibility"
   ></FactoryMenu>
