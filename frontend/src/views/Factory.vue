@@ -82,7 +82,7 @@ let sizes: {
   ratio: number
 }
 let originalOrientation = ''
-let placedEntities: PlacedEntities
+const placedEntities = ref<PlacedEntities>()
 let animationManager: AnimationManager
 /**
  * THREE.JS Specific
@@ -134,8 +134,8 @@ const setupLights = (): void => {
 }
 
 const setupManager = (): void => {
-  placedEntities = new PlacedEntities(scene)
-  animationManager = new AnimationManager(placedEntities, scene, loader)
+  placedEntities.value = new PlacedEntities(scene)
+  animationManager = new AnimationManager(placedEntities.value, scene, loader)
   ccm = new CameraControlsManager(camera, renderer.domElement, CameraMode.ORBIT)
   currentMode = ccm.currentMode
 }
@@ -210,11 +210,11 @@ const onChangeEntityClicked = (situation: string): void => {
     case 'delete':
       entityDeleteRequest({
         factoryId: factoryID.value,
-        id: placedEntities.getByUUID(currentObjectSelected.uuid).id
+        id: placedEntities.value!!.getByUUID(currentObjectSelected.uuid).id
       })
           .then((success) => {
             if (success) {
-              placedEntities.deleteByUUID(currentObjectSelected.uuid)
+              placedEntities.value!!.deleteByUUID(currentObjectSelected.uuid)
               // Remove from scene
               scene.remove(currentObjectSelected)
               //if (currentObjectSelected.parent.type !== 'Scene')
@@ -245,14 +245,14 @@ const onChangeEntityClicked = (situation: string): void => {
       console.log('scripting Entity')
       showScripting.value = !showScripting.value
       showMenuBar.value = false
-      console.log("ModelIDDDDDD: ", placedEntities.getByUUID(currentObjectSelected.uuid).id)
+      console.log("ModelIDDDDDD: ", placedEntities.value!!.getByUUID(currentObjectSelected.uuid).id)
       break
 
     case 'clone':
       if (allEntities.value) {
         // Find highlight by name
         activeEntity.value = allEntities.value.find(
-          (obj) => obj.name === placedEntities.getByUUID(currentObjectSelected.uuid).modelId
+          (obj) => obj.name === placedEntities.value!!.getByUUID(currentObjectSelected.uuid).modelId
         )
 
         // If it was the same, update manually
@@ -278,14 +278,14 @@ const onAnimationStart = (event: any) => {
 }
 
 const onClearAllClick = (event: any) => {
-  placedEntities.getAllEntities().forEach((entitie: IEntity) => {
+  placedEntities.value!!.getAllEntities().forEach((entitie: IEntity) => {
     entityDeleteRequest({
       factoryId: factoryID.value,
       id: entitie.id
     })
         .then((success) => {
           if (success) {
-            placedEntities.deleteByUUID(entitie.uuid)
+            placedEntities.value!!.deleteByUUID(entitie.uuid)
             scene.remove(entitie.threejsObject)
           }
         })
@@ -320,8 +320,8 @@ const handleKeyDown = (event: KeyboardEvent) => {
     case 'V':
       if (manipulationMode.value === ManipulationMode.ROTATE) {
         rotationRequest({
-          id: placedEntities.getByUUID(currentObjectSelected.uuid).id,
-          orientation: placedEntities.getByUUID(currentObjectSelected.uuid).orientation,
+          id: placedEntities.value!!.getByUUID(currentObjectSelected.uuid).id,
+          orientation: placedEntities.value!!.getByUUID(currentObjectSelected.uuid).orientation,
           factoryId: factoryID.value
         })
             .then((res) => res.json())
@@ -329,9 +329,9 @@ const handleKeyDown = (event: KeyboardEvent) => {
               if (!success) {
                 rotateModelFromXtoY(
                     originalOrientation,
-                    placedEntities.getByUUID(currentObjectSelected.uuid).orientation,
+                    placedEntities.value!!.getByUUID(currentObjectSelected.uuid).orientation,
                     currentObjectSelected,
-                    placedEntities
+                    placedEntities.value!!
                 )
               }
             })
@@ -366,7 +366,7 @@ const handleKeyDown = (event: KeyboardEvent) => {
       switch (manipulationMode.value) {
         case ManipulationMode.ROTATE:
           rotateModel('left', currentObjectSelected)
-          placedEntities.rotateEntityByUUID(currentObjectSelected.uuid, 'left')
+          placedEntities.value!!.rotateEntityByUUID(currentObjectSelected.uuid, 'left')
       }
       break
 
@@ -374,7 +374,7 @@ const handleKeyDown = (event: KeyboardEvent) => {
       switch (manipulationMode.value) {
         case ManipulationMode.ROTATE:
           rotateModel('right', currentObjectSelected)
-          placedEntities.rotateEntityByUUID(currentObjectSelected.uuid, 'right')
+          placedEntities.value!!.rotateEntityByUUID(currentObjectSelected.uuid, 'right')
       }
       break
 
@@ -437,7 +437,7 @@ const handleClick = (event: any) => {
               backendUrl + activeEntity.value.modelFile
           ).then((threejsObject) => {
             if (activeEntity.value) {
-              placedEntities.add({
+              placedEntities.value!!.add({
                 id: 0,
                 orientation: 'North',
                 modelId: activeEntity.value.name,
@@ -459,11 +459,11 @@ const handleClick = (event: any) => {
             .then((id) => {
               console.log("Alter EY: ", id)
               if (id === -1) return
-              placedEntities.updateLastId(id)
+              placedEntities.value!!.updateLastId(id)
 
             })
             .catch((error) => {
-              const lastElement = placedEntities.pop()
+              const lastElement = placedEntities.value!!.pop()
               if (lastElement) {
                 useError().updateErrorMessage("Can't Place Entity, because it intersects with other object or is out of bounds")
                 if (!useError().showErrorMessage.value) useError().toggleShowErrorMessage()
@@ -478,7 +478,7 @@ const handleClick = (event: any) => {
         x: currentObjectSelected.position.x,
         y: currentObjectSelected.position.y,
         z: currentObjectSelected.position.z,
-        id: placedEntities.getByUUID(currentObjectSelected.uuid).id,
+        id: placedEntities.value!!.getByUUID(currentObjectSelected.uuid).id,
         factoryId: factoryID.value
       })
           .then((response) => response.json())
@@ -507,7 +507,7 @@ const handleContextMenu = (event: MouseEvent) => {
     const { worked, currObj, lastObj } = result
     if (worked) {
       currentObjectSelected = currObj
-      originalOrientation = placedEntities.getByUUID(currentObjectSelected.uuid).orientation
+      originalOrientation = placedEntities.value!!.getByUUID(currentObjectSelected.uuid).orientation
 
       lastObjectSelected = lastObj
       if (dynamicDiv) {
@@ -603,7 +603,7 @@ onMounted(() => {
           {x: backendEntity.x, y: backendEntity.y, z: backendEntity.z},
           backendUrl + backendEntity.path
       ).then((threejsObject) => {
-        placedEntities.add({
+        placedEntities.value!!.add({
           id: backendEntity.id,
           orientation: backendEntity.orientation,
           modelId: backendEntity.modelId,
@@ -671,8 +671,8 @@ const saveAndCloseScript = (scriptContent: string) => {
   showScripting.value = !showScripting.value
   showMenuBar.value = true
 
-  let modelIdForSavingTheScript = placedEntities.getByUUID(currentObjectSelected.uuid).id
-  console.log("objekt: ", placedEntities.getByUUID(currentObjectSelected.uuid))
+  let modelIdForSavingTheScript = placedEntities.value!!.getByUUID(currentObjectSelected.uuid).id
+  console.log("objekt: ", placedEntities.value!!.getByUUID(currentObjectSelected.uuid))
 
   // schicke den string mit den kompletten script an das backend (mit der zugehörigen modelId)
   console.log("Das wird an ScriptContent ans BE geschickt: ", scriptContent);
@@ -790,7 +790,7 @@ import currentObjectSelected from '@/views/Factory.vue'
       "
     />
   </div>
-  <ScriptContainer v-if="showScripting" :model="placedEntities.getByUUID(currentObjectSelected.uuid)"
+  <ScriptContainer v-if="showScripting" :model="placedEntities!!.getByUUID(currentObjectSelected.uuid)"
                    @saveAndClose="saveAndCloseScript" @closeScript="closeScript()"/>
   <!-- hier wird methode noch default weret für scriptContent mitgegeben -->
   <FactoryMenu

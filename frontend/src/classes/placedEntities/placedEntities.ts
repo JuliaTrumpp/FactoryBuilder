@@ -21,7 +21,7 @@ export class PlacedEntities {
    * Single Entity Operations
    */
   public add = (entity: IEntity) => {
-    console.log(this.allEntities)
+    console.log(this.allEntities);
     this.allEntities.push(entity)
   }
 
@@ -42,6 +42,7 @@ export class PlacedEntities {
     return entity
   }
   public getByID = (id: number): IEntity => {
+    console.log(`Searching for entity with id: ${id}, type of id: ${typeof id}`);
     const entity = this.allEntities.find((e) => e.id == id)
     if (!entity) throw new Error('Entity not found (by id)')
     return entity
@@ -51,7 +52,6 @@ export class PlacedEntities {
     const entity = this.getByID(id)
     switch(situation) {
       case "DELETE":
-        console.log(entity)
         this.sceneRef.remove(entity.threejsObject)
         this.deleteByUUID(entity.uuid)
         break

@@ -1,20 +1,17 @@
 import type {
-  IBackendMessageEvent as IBackendMessageEvent,
-  IBackendEntity
+  IBackendMessageEvent as IBackendMessageEvent
 } from '@/types/backendTypes'
-import { getAllEntities, getEntityInFactory } from '@/utils/backend-communication/getRequests'
 import type { IMessage } from '@stomp/stompjs'
 import { Client } from '@stomp/stompjs'
-import {stompRemoveEntity} from '@/views/Factory.vue'
 import type { PlacedEntities } from '../placedEntities/placedEntities'
-import type { Ref } from 'vue'
+import {type Ref, ref} from "vue";
 
 class StompClientBuilder {
   private readonly factoryID: number
   private client: Client
-  private placedEntites: PlacedEntities
+  private placedEntites = ref<PlacedEntities>()
 
-  constructor(factoryID: number, placedEntites: any) {
+  constructor(factoryID: number, placedEntites: Ref<PlacedEntities | undefined>) {
     this.placedEntites = placedEntites
     this.factoryID = factoryID
     this.client = new Client({
@@ -42,9 +39,8 @@ class StompClientBuilder {
 
       const backendMessageEvent: IBackendMessageEvent = JSON.parse(message.body)
       console.log("BackendMessageEvent: ", backendMessageEvent)
-
-
-      this.placedEntites.updateByID(backendMessageEvent.eventID, backendMessageEvent.operationType)
+      console.log(this.placedEntites.value)
+      this.placedEntites.value!!.updateByID(backendMessageEvent.eventID, backendMessageEvent.operationType)
       })
   }
 
