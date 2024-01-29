@@ -87,6 +87,8 @@ export class PlacedEntities {
     const allPipes = [...this.getAllCurvedSinglePipes(), ...this.getAllStraightSinglePipes()]
     let out: ICombinedPipe[] = []
 
+    console.log(allPipes);
+
     // create all
     allPipes.forEach((currentPipe) => {
       let rotatedLeft = this.findCombinedPipe(currentPipe.startPoint, true, out)
@@ -144,8 +146,10 @@ export class PlacedEntities {
    * Get Pipes primitive
    */
   public getAllStraightSinglePipes = (): IPipeInfo[] => {
+
+    console.log(this.allEntities)
     return this.allEntities
-      .filter((entity) => entity.modelId === 'pipe_straight')
+      .filter((entity) => entity.modelId === 'roehre')
       .map((mesh) => {
         return {
           startPoint: this.getPointsFromSinglePipe(mesh).startPoint.clone(),
@@ -159,7 +163,7 @@ export class PlacedEntities {
 
   public getAllCurvedSinglePipes = (): IPipeInfo[] => {
     return this.allEntities
-      .filter((entity) => entity.modelId === 'pipe_curved')
+      .filter((entity) => entity.modelId === 'kurve')
       .map((mesh) => {
         return {
           startPoint: this.getPointsFromSinglePipe(mesh).startPoint.clone(),

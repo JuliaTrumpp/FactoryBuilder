@@ -2,10 +2,10 @@
 import type {Ref} from 'vue'
 import {onBeforeUnmount, onMounted, onUnmounted, provide, ref, watch} from 'vue'
 import type {IVector3} from '@/types/global'
-import type {IBackendEntity, IBackendEntityPreview, IEntityDelete} from '@/types/backendTypes'
+import type {IBackendEntity, IBackendEntityPreview} from '@/types/backendTypes'
 import * as THREE from 'three'
 import { CameraControlsManager } from '@/classes/cameraControls/CameraControlsManager'
-import { PlacedEntities, type IEntity } from '@/classes/placedEntities/placedEntities'
+import { PlacedEntities } from '@/classes/placedEntities/placedEntities'
 import { getIntersectionsMouse } from '@/utils/threeJS/3d'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import CircularMenu from '@/components/factory-ui/CircularMenu.vue'
@@ -27,7 +27,6 @@ import {
   drawBox,
   drawLine,
   moveHighlight,
-  roundToHalf,
   selectionObject,
   updateHighlightModel
 } from '@/utils/threeJS/helpFunctions'
@@ -45,6 +44,7 @@ import FactoryMenu from "@/components/factory-ui/SideBar.vue";
 import {useSessionUser} from "@/utils/composition-functions/useSessionUser";
 import {useError} from "@/utils/composition-functions/useError";
 import StompClientBuilder from '@/classes/messaging/StompClientBuilder' 
+import type { IEntity } from '@/types/placedEntites'
 
 /**
  * Config
@@ -291,7 +291,6 @@ const onClearAllClick = (event: any) => {
 }
 
 const onDebugClick = (event: any) => {
-  placedEntities.getAllPipes();
 }
 
 /**

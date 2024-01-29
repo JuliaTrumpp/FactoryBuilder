@@ -1,8 +1,8 @@
 import { interpolateVector } from '@/utils/animation/animation'
 import { loadEntitie } from '@/utils/threeJS/entityManipulation'
 import * as THREE from 'three'
-import type { ICombinedPipe, ICompass, PlacedEntities } from '../placedEntities/placedEntities'
-import { drawLine } from '@/utils/threeJS/helpFunctions'
+import type { PlacedEntities } from '../placedEntities/placedEntities'
+import type { ICombinedPipe, ICompass } from '@/types/placedEntites'
 
 export class AnimationManager {
   private placedEntitesRef: PlacedEntities
@@ -134,11 +134,11 @@ export class AnimationManager {
       if (orientation === 'South' || orientation === 'West') {
         midPoint = new THREE.Vector3()
           .lerpVectors(from, to, 0.5)
-          .add(new THREE.Vector3(0, from.distanceTo(to) / 3, 0))
+          .add(new THREE.Vector3(0, -from.distanceTo(to) / 3, 0))
       } else {
         midPoint = new THREE.Vector3()
           .lerpVectors(from, to, 0.5)
-          .add(new THREE.Vector3(0, -from.distanceTo(to) / 3, 0))
+          .add(new THREE.Vector3(0, from.distanceTo(to) / 3, 0))
       }
 
       // drawLine(from, to, this.sceneRef)
