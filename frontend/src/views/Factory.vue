@@ -134,7 +134,7 @@ const setupLights = (): void => {
 }
 
 const setupManager = (): void => {
-  placedEntities.value = new PlacedEntities(scene)
+  placedEntities.value = new PlacedEntities(scene, loader)
   animationManager = new AnimationManager(placedEntities.value, scene, loader)
   ccm = new CameraControlsManager(camera, renderer.domElement, CameraMode.ORBIT)
   currentMode = ccm.currentMode
@@ -451,7 +451,8 @@ const handleClick = (event: any) => {
           y: highlight.position.y,
           z: highlight.position.z,
           modelId: activeEntity.value.name,
-          factoryID: factoryID.value
+          factoryID: factoryID.value,
+          user: useSessionUser().sessionUser.value
         })
             .then((response) => {
               console.log(response)

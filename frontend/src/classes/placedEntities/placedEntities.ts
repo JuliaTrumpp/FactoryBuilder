@@ -1,10 +1,12 @@
 import type { IEntity, ICombinedPipe, IPipeInfo } from '@/types/placedEntites'
 import { getEntityInFactory } from '@/utils/backend-communication/getRequests'
+import { backendUrl } from '@/utils/config/config'
 import { turnLeft, turnRight, reverseCombinedPipe, pointsOverlapping, weldPointsOfCombinedPipes } from '@/utils/placedEntities/placedEntities'
 import { getCenterPoint, rotateModelFromXtoY } from '@/utils/rotation/rotate'
-import { replaceEntity } from '@/utils/threeJS/entityManipulation'
+import { placeEntity, replaceEntity } from '@/utils/threeJS/entityManipulation'
 import { roundVector } from '@/utils/threeJS/helpFunctions'
 import * as THREE from 'three'
+import type { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 /**
  * Represents the collection of all current entities in the factory
@@ -12,9 +14,11 @@ import * as THREE from 'three'
 export class PlacedEntities {
   private allEntities: IEntity[] = []
   private sceneRef: THREE.Scene
+  private loader: GLTFLoader
 
-  constructor(sceneRef: THREE.Scene) {
+  constructor(sceneRef: THREE.Scene, loader: GLTFLoader) {
     this.sceneRef = sceneRef
+    this.loader = loader
   }
 
   /**
@@ -48,23 +52,52 @@ export class PlacedEntities {
     return entity
   }
 
-  public updateByID = async (id: number, situation?: string) => {
-    const entity = this.getByID(id)
+  public updateByID = async (id: number, situation?: string, gltf?: string) => {
+    let entity, entityNew, position; 
     switch(situation) {
       case "DELETE":
+        entity = this.getByID(id)
         this.sceneRef.remove(entity.threejsObject)
         this.deleteByUUID(entity.uuid)
         break
-        case "UPDATE":
-          const entityNew = await getEntityInFactory(entity.id)
-          rotateModelFromXtoY(entity.orientation, entityNew.orientation, entity.threejsObject, this)
-          const position = {
-            x: entityNew.x,
-            y: entityNew.y,
-            z: entityNew.z
-          }
-          replaceEntity(position, entity.threejsObject)
-          break
+      case "MOVE":
+        entity = this.getByID(id)
+        entityNew = await getEntityInFactory(entity.id)
+        position = {
+          x: entityNew.x,
+          y: entityNew.y,
+          z: entityNew.z
+        }
+        replaceEntity(position, entity.threejsObject)
+        break
+      case "ROTATE":
+        entity = this.getByID(id)
+        entityNew = await getEntityInFactory(entity.id)
+        rotateModelFromXtoY(entity.orientation, entityNew.orientation, entity.threejsObject, this)
+        break;
+      case "ADDNEW":
+         entityNew = await getEntityInFactory(id)
+         position = {
+          x: entityNew.x,
+          y: entityNew.y,
+          z: entityNew.z
+        }
+        placeEntity(
+          this.loader,
+          this.sceneRef,
+          position,
+          backendUrl + gltf
+      ).then((threejsObject) => {
+      
+          this.add({
+            id: id,
+            orientation: 'North',
+            modelId: gltf?.split(".")[0].split("/")[2] || "",
+            uuid: threejsObject.uuid,
+            threejsObject: threejsObject
+          })
+      })
+        break; 
     }
   }
 

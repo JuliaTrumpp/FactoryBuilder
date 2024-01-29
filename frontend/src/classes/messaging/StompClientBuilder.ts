@@ -5,6 +5,7 @@ import type { IMessage } from '@stomp/stompjs'
 import { Client } from '@stomp/stompjs'
 import type { PlacedEntities } from '../placedEntities/placedEntities'
 import {type Ref, ref} from "vue";
+import { useSessionUser } from '@/utils/composition-functions/useSessionUser';
 
 class StompClientBuilder {
   private readonly factoryID: number
@@ -39,8 +40,9 @@ class StompClientBuilder {
 
       const backendMessageEvent: IBackendMessageEvent = JSON.parse(message.body)
       console.log("BackendMessageEvent: ", backendMessageEvent)
-      console.log(this.placedEntites.value)
-      this.placedEntites.value!!.updateByID(backendMessageEvent.eventID, backendMessageEvent.operationType)
+      console.log(backendMessageEvent.user)
+      if(backendMessageEvent.user === useSessionUser().sessionUser.value) return;
+      this.placedEntites.value!!.updateByID(backendMessageEvent.eventID, backendMessageEvent.operationType, backendMessageEvent.gltf)
       })
   }
 

@@ -21,6 +21,5 @@ public class FrontendMessageService {
                 String.format("Nachricht verschickt: %s %s[id=%d]", e.getOperationType(), e.getEventType(),
                         e.getEventID()));
     }
-
     
 }

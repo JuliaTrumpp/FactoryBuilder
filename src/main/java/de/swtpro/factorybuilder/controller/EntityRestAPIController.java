@@ -58,8 +58,9 @@ public class EntityRestAPIController {
 
         Position pos = new Position(placeRequestDTO.x(), placeRequestDTO.y(), placeRequestDTO.z());
         Model model = modelService.getByName(placeRequestDTO.modelId()).orElseThrow();
-       AbstractModel abstractModel = abstractModelService.createPlacedModel(model, pos, placeRequestDTO.factoryID());
-
+        String username = placeRequestDTO.user();
+        AbstractModel abstractModel = abstractModelService.createPlacedModel(model, pos, placeRequestDTO.factoryID());
+        
 
        if (abstractModel == null) {
 
@@ -68,7 +69,7 @@ public class EntityRestAPIController {
        }
 
        LOGGER.info("placed Model with placedModelID: " + abstractModel.getId() + " and modelID: " + model.getId() + " ('" + abstractModel.getName() + "')");
-       frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, abstractModel.getId(), MessageOperationType.UPDATE), abstractModel.getFactory().getFactoryID());
+       frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, abstractModel.getId(), MessageOperationType.ADDNEW, abstractModel.getModelGltf(), username), abstractModel.getFactory().getFactoryID());
        // Entity wir in Datenbank erzeugt, und id wird gesendet
        return ResponseEntity.ok(abstractModel.getId());
     }
@@ -85,7 +86,7 @@ public class EntityRestAPIController {
     @PostMapping("/rotate")
     public ResponseEntity<Boolean> rotate(@RequestBody RotateRequestDTO rotateRequestDTO) {
         boolean rotated = manipulateAbstractModelService.rotateModel(rotateRequestDTO.id(), rotateRequestDTO.orientation());
-        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, rotateRequestDTO.id(), MessageOperationType.UPDATE), rotateRequestDTO.factoryID());
+        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, rotateRequestDTO.id(), MessageOperationType.DELETE), rotateRequestDTO.factoryID());
 
         LOGGER.info("rotate entity: " + String.valueOf(rotateRequestDTO.id()) + " is " + String.valueOf(rotated));
 
@@ -101,7 +102,7 @@ public class EntityRestAPIController {
         //LOGGER.info(moveRequestDTO.toString());
         //LOGGER.info("move entity: " + String.valueOf(moveRequestDTO.id) + String.valueOf(moved));
         LOGGER.info("Moved: " + moved);
-        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, moveRequestDTO.id(), MessageOperationType.UPDATE), moveRequestDTO.factoryId());
+        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, moveRequestDTO.id(), MessageOperationType.MOVE), moveRequestDTO.factoryId());
         return ResponseEntity.ok(moved);
     }
 
@@ -194,7 +195,7 @@ public class EntityRestAPIController {
     }
 
     @CrossOrigin
-    @GetMapping("/get/' + {entityId}")
+    @GetMapping("/get/{entityId}")
     public PlacedModelDTO getPlacedEntity(@PathVariable long entityId) {
         try {
             AbstractModel abstractModel = abstractModelService.getPlacedModelById(entityId).orElseThrow();
