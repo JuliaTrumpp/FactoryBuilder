@@ -133,10 +133,6 @@ const setupLights = (): void => {
   scene.add(directionalLight)
 }
 
-const setupLoader = (): void => {
-  loader = new GLTFLoader()
-}
-
 const setupManager = (): void => {
   placedEntities = new PlacedEntities(scene)
   animationManager = new AnimationManager(placedEntities, scene, loader)
@@ -150,7 +146,7 @@ const setupLoader = (): void => {
 
 const setupStompClientBuilder = (): void => { // = startQuizLiveUpdate()
   if(stompClientBuilder.value == null) {
-    stompClientBuilder.value = new StompClientBuilder(factoryID.value);
+    stompClientBuilder.value = new StompClientBuilder(factoryID.value, placedEntities);
     stompClientBuilder.value.activate();
   }
 }
@@ -654,9 +650,9 @@ const init = () => {
   setupCamera()
   setupLights()
   setupLoader()
-  setupStompClientBuilder()
   createRoom(factorySize.value.x, factorySize.value.y, factorySize.value.z, scene)
   setupManager()
+  setupStompClientBuilder()
 }
 
 const animate = (timestamp: any) => {

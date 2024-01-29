@@ -45,7 +45,7 @@ public class EntityRestAPIController {
 
 
     EntityRestAPIController(ModelService modelService, AbstractModelService abstractModelService,
-                            ManipulateAbstractModelService manipulateAbstractModelService) {
+                            ManipulateAbstractModelService manipulateAbstractModelService, FrontendMessageService frontendMessageService) {
         this.modelService = modelService;
         this.abstractModelService = abstractModelService;
         this.manipulateAbstractModelService = manipulateAbstractModelService;
@@ -61,7 +61,7 @@ public class EntityRestAPIController {
        AbstractModel abstractModel = abstractModelService.createPlacedModel(model, pos, placeRequestDTO.factoryID());
 
 
-        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, placedModel.getId(), MessageOperationType.UPDATE), placedModel.getFactoryID());
+        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, abstractModel.getId(), MessageOperationType.UPDATE), abstractModel.getFactory().getFactoryID());
 
 
        if (abstractModel == null) {
@@ -200,21 +200,22 @@ public class EntityRestAPIController {
     @GetMapping("/get/' + {entityId}")
     public PlacedModelDTO getPlacedEntity(@PathVariable long entityId) {
         try {
-            PlacedModel placedModel = placedModelService.getPlacedModelById(entityId).orElseThrow();
-            Model m = modelService.getByID(placedModel.getModelId()).orElse(null);
+            AbstractModel abstractModel = abstractModelService.getPlacedModelById(entityId).orElseThrow();
+            Model m = modelService.getByID(abstractModel.getId()).orElse(null);
 
-            assert placedModel != null;
+            assert abstractModel != null;
             PlacedModelDTO dto = new PlacedModelDTO(
-                    placedModel.getFactoryID(),
-                    placedModel.getId(),
-                    placedModel.getOrientation(),
-                    placedModel.getRootPos().getX(),
-                    placedModel.getRootPos().getY(),
-                    placedModel.getRootPos().getZ(),
+                    abstractModel.getFactory().getFactoryID(),
+                    abstractModel.getId(),
+                    abstractModel.getOrientation(),
+                    abstractModel.getRootPos().getX(),
+                    abstractModel.getRootPos().getY(),
+                    abstractModel.getRootPos().getZ(),
+                    //abstractModel.getScript(),
                     m.getModelFile(), // Füge den Pfad hinzu, wie erforderlich (? Kommentar von getAll in factoryAPI
                                       // übernommen)
                     m.getName()
-            // hier muss wenn script branch gemerged ist, noch placedModel.getScript() hin
+            // hier muss wenn script branch gemerged ist, noch abstractModel.getScript() hin
             // -> DTO abändern...
             // -> an jeder anderen Stelle wo Entities aus BE geholt werden z.B auch
             // getAll(), load() etc.

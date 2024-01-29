@@ -1,6 +1,8 @@
 import type { IEntity, ICombinedPipe, IPipeInfo } from '@/types/placedEntites'
+import { getEntityInFactory } from '@/utils/backend-communication/getRequests'
 import { turnLeft, turnRight, reverseCombinedPipe, pointsOverlapping, weldPointsOfCombinedPipes } from '@/utils/placedEntities/placedEntities'
-import { getCenterPoint } from '@/utils/rotation/rotate'
+import { getCenterPoint, rotateModelFromXtoY } from '@/utils/rotation/rotate'
+import { replaceEntity } from '@/utils/threeJS/entityManipulation'
 import { roundVector } from '@/utils/threeJS/helpFunctions'
 import * as THREE from 'three'
 
@@ -18,7 +20,10 @@ export class PlacedEntities {
   /**
    * Single Entity Operations
    */
-  public add = (entity: IEntity) => this.allEntities.push(entity)
+  public add = (entity: IEntity) => {
+    console.log(entity)
+    this.allEntities.push(entity)
+  }
 
   public updateLastId = (id: number) => {
     const lastIndex = this.allEntities.length - 1
@@ -28,12 +33,38 @@ export class PlacedEntities {
   }
   public pop = () => {
     return this.allEntities.pop()
+  
   }
 
   public getByUUID = (uuid: string): IEntity => {
     const entity = this.allEntities.find((e) => e.uuid === uuid)
     if (!entity) throw new Error('Entity not found')
     return entity
+  }
+  public getByID = (id: number): IEntity => {
+    const entity = this.allEntities.find((e) => e.id === id)
+    if (!entity) throw new Error('Entity not found')
+    return entity
+  }
+
+  public updateByID = async (id: number, situation?: string) => {
+    console.log(this.allEntities)
+    const entity = this.getByID(id)
+    switch(situation) {
+      case "DELETE":
+        this.deleteByUUID(entity.uuid)
+        break
+        case "UPDATE":
+          const entityNew = await getEntityInFactory(entity.id)
+          rotateModelFromXtoY(entity.orientation, entityNew.orientation, entity.threejsObject, this)
+          const position = {
+            x: entityNew.x,
+            y: entityNew.y,
+            z: entityNew.z
+          }
+          replaceEntity(position, entity.threejsObject)
+          break
+    }
   }
 
   public rotateEntityByUUID = (uuid: string, dir: 'left' | 'right') => {

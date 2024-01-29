@@ -6,12 +6,16 @@ import { getAllEntities, getEntityInFactory } from '@/utils/backend-communicatio
 import type { IMessage } from '@stomp/stompjs'
 import { Client } from '@stomp/stompjs'
 import {stompRemoveEntity} from '@/views/Factory.vue'
+import type { PlacedEntities } from '../placedEntities/placedEntities'
+import type { Ref } from 'vue'
 
 class StompClientBuilder {
   private readonly factoryID: number
   private client: Client
+  private placedEntites: PlacedEntities
 
-  constructor(factoryID: number) {
+  constructor(factoryID: number, placedEntites: any) {
+    this.placedEntites = placedEntites!!
     this.factoryID = factoryID
     this.client = new Client({
       brokerURL: 'ws://localhost:8080/stompbroker',
@@ -40,20 +44,7 @@ class StompClientBuilder {
       console.log("BackendMessageEvent: ", backendMessageEvent)
 
 
-      if (backendMessageEvent.operationType == 'UPDATE') {
-        
-        getEntityInFactory(backendMessageEvent.eventID).then((changedPlacedModel: IBackendEntity) => {
-          // dieses Entity neu laden und im FE setzen (es wurde verschoben/ rotiert/ etc wurde)
-          // changedPlacedModel benutzen
-        })
-      } else if (backendMessageEvent.operationType == 'DELETE') {
-        console.log("Ich geh in den else DELETE rein")
-        // dieses Entity im FE löschen
-        // delete allPlacedEntities[changedPlacedModel.id]
-        // scene.remove(changedPlacedModel)     
-        stompRemoveEntity(backendMessageEvent.eventID);  
-        // changedPlacedModel benutzen
-      }
+      this.placedEntites.updateByID(backendMessageEvent.eventID, backendMessageEvent.operationType)
       })
   }
 
