@@ -329,15 +329,3 @@ export const drawBox = (object: THREE.Object3D, scene: THREE.Scene): void => {
   scene.add(box)
 }
 
-export const roundVector = (vector: THREE.Vector3): THREE.Vector3 =>  {
-  const v = vector.clone();
-  v.x = round(v.x)
-  v.y = round(v.y);
-  v.z = round(v.z);
-  return v;
-}
-
-export const round = (value: number): number =>  {
-  return Math.round(value * 10) / 10;
-}
-

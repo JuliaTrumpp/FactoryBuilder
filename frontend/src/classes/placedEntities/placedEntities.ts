@@ -1,7 +1,6 @@
 import type { IEntity, ICombinedPipe, IPipeInfo } from '@/types/placedEntites'
 import { turnLeft, turnRight, reverseCombinedPipe, pointsOverlapping, weldPointsOfCombinedPipes } from '@/utils/placedEntities/placedEntities'
 import { getCenterPoint } from '@/utils/rotation/rotate'
-import { roundVector } from '@/utils/threeJS/helpFunctions'
 import * as THREE from 'three'
 
 /**
@@ -26,6 +25,7 @@ export class PlacedEntities {
       this.allEntities[lastIndex].id = id
     }
   }
+  
   public pop = () => {
     return this.allEntities.pop()
   }
