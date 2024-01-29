@@ -10,7 +10,7 @@ import jakarta.persistence.Entity;
 public class ElectronicsMachine extends AbstractMachine {
 
     String name = "Elektronikmaschine";
-    String modelGltf = "static/models/mock/machines/elektronikmaschine.gltf";
+    String modelGltf = "/models/machines/elektronikmaschine.gltf";
 
     public ElectronicsMachine(Factory factory, Position rootPosition) {
         super(factory, rootPosition);

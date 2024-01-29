@@ -9,7 +9,7 @@ import jakarta.persistence.Entity;
 @DiscriminatorValue("RawMaterialIntake")
 public class RawMaterialIntake extends AbstractOther {
     String name = "Rohstoffannahme";
-    String modelGltf = "static/models/mock/other/rohstoffannahme.gltf";
+    String modelGltf = "/models/other/rohstoffannahme.gltf";
 
     public RawMaterialIntake(Factory factory, Position rootPosition) {
         super(factory, rootPosition);

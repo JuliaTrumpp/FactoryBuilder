@@ -9,7 +9,7 @@ import jakarta.persistence.Entity;
 @DiscriminatorValue("GoodsIssue")
 public class GoodsIssue extends AbstractOther {
     String name = "Warenausgabe";
-    String modelGltf = "static/models/mock/other/warenausgabe.gltf";
+    String modelGltf = "/models/other/warenausgabe.gltf";
 
     public GoodsIssue(Factory factory, Position rootPosition) {
         super(factory, rootPosition);

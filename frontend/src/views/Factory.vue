@@ -426,8 +426,7 @@ const handleClick = (event: any) => {
   // Cirlce events
   switch (manipulationMode.value) {
     case ManipulationMode.SET:
-      if (activeEntity.value) {
-        if (activeEntity.value) {
+      if (activeEntity.value && !highlightIsIntersectingWithObjects.value) {
           placeEntity(
               loader,
               scene,
@@ -444,7 +443,6 @@ const handleClick = (event: any) => {
               })
             }
           })
-        }
         placeRequest({
           x: highlight.position.x,
           y: highlight.position.y,

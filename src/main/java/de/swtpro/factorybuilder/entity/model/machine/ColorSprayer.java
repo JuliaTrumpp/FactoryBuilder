@@ -9,7 +9,7 @@ import jakarta.persistence.Entity;
 @DiscriminatorValue("ColorSprayer")
 public class ColorSprayer extends AbstractMachine {
     String name = "Farbsprüher";
-    String modelGltf = "static/models/mock/machines/farbsprueher.gltf";
+    String modelGltf = "/models/machines/farbsprueher.gltf";
 
     public ColorSprayer(Factory factory, Position rootPosition) {
         super(factory, rootPosition);

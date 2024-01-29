@@ -9,7 +9,7 @@ import jakarta.persistence.Entity;
 @DiscriminatorValue("Sign")
 public class Sign extends AbstractOther {
     String name = "Schild";
-    String modelGltf = "static/models/mock/other/schild.gltf";
+    String modelGltf = "/models/other/schild.gltf";
 
     public Sign(Factory factory, Position rootPosition) {
         super(factory, rootPosition);

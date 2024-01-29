@@ -9,7 +9,7 @@ import jakarta.persistence.Entity;
 @DiscriminatorValue("OreCleaner")
 public class OreCleaner extends AbstractMachine {
     String name = "Erzreiniger";
-    String modelGltf = "static/models/mock/machines/erzreiniger.gltf";
+    String modelGltf = "/models/machines/erzreiniger.gltf";
 
     public OreCleaner(Factory factory, Position rootPosition) {
         super(factory, rootPosition);

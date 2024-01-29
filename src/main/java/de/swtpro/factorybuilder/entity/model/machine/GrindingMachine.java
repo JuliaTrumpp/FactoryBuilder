@@ -9,7 +9,7 @@ import jakarta.persistence.Entity;
 @DiscriminatorValue("GrindingMachine")
 public class GrindingMachine extends AbstractMachine {
     String name = "Schleifmaschine";
-    String modelGltf = "static/models/mock/machines/schleifmaschine.gltf";
+    String modelGltf = "/models/machines/schleifmaschine.gltf";
 
     public GrindingMachine(Factory factory, Position rootPosition) {
         super(factory, rootPosition);

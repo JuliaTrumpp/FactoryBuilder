@@ -8,8 +8,8 @@ import jakarta.persistence.Entity;
 @Entity
 @DiscriminatorValue("ThreeWaySwitch")
 public class ThreeWaySwitch extends AbstractTransportation {
-    String name = "";
-    String modelGltf = "";
+    String name = "Weiche(4)";
+    String modelGltf = "/models/transportation/weiche(4).gltf";
 
     public ThreeWaySwitch(Factory factory, Position rootPosition) {
         super(factory, rootPosition);

@@ -8,8 +8,8 @@ import jakarta.persistence.Entity;
 @Entity
 @DiscriminatorValue("StraightPipe")
 public class StraightPipe extends AbstractTransportation {
-    String name = "gerades Rohr";
-    String modelGltf = "static/models/mock/transportation/pipe_straight.gltf";
+    String name = "Röhre";
+    String modelGltf = "/models/transportation/roehre.gltf";
 
     public StraightPipe(Factory factory, Position rootPosition) {
         super(factory, rootPosition);

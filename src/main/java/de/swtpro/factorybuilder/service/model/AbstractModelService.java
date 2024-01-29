@@ -28,7 +28,7 @@ public class AbstractModelService {
 
     @Autowired
     AbstractModelService(AbstractModelRepository abstractModelRepository,@Lazy TransportationService transportationService,
-                         @Lazy OtherService otherService,@Lazy  MachineService machineService) {
+                         @Lazy OtherService otherService,@Lazy MachineService machineService) {
         this.abstractModelRepository = abstractModelRepository;
         this.transportationService = transportationService;
         this.otherService = otherService;

@@ -9,7 +9,7 @@ import jakarta.persistence.Entity;
 @DiscriminatorValue("Pillar")
 public class Pillar extends AbstractOther {
     String name = "Säule";
-    String modelGltf = "static/models/mock/other/saeule.gltf";
+    String modelGltf = "/models/other/saeule.gltf";
 
     public Pillar(Factory factory, Position rootPosition) {
         super(factory, rootPosition);
