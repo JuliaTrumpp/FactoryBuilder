@@ -5,7 +5,7 @@ import type {IVector3} from '@/types/global'
 import type {IBackendEntity, IBackendEntityPreview, IEntityDelete} from '@/types/backendTypes'
 import * as THREE from 'three'
 import { CameraControlsManager } from '@/classes/cameraControls/CameraControlsManager'
-import { PlacedEntities, type IEntity } from '@/classes/placedEntities/placedEntities'
+import { PlacedEntities } from '@/classes/placedEntities/placedEntities'
 import { getIntersectionsMouse } from '@/utils/threeJS/3d'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import CircularMenu from '@/components/factory-ui/CircularMenu.vue'
@@ -46,6 +46,7 @@ import {useSessionUser} from '@/utils/composition-functions/useSessionUser'
 import {useError} from '@/utils/composition-functions/useError'
 import ScriptContainer from '@/components/factory-ui/ScriptContainer.vue'
 import StompClientBuilder from '@/classes/messaging/StompClientBuilder'
+import type { IEntity } from '@/types/placedEntites'
 
 /**
  * Config
