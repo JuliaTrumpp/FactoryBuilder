@@ -330,30 +330,3 @@ const pointsOverlapping = (p1: THREE.Vector3, p2: THREE.Vector3): boolean => {
 
   return deltaX <= tolerance && deltaY <= tolerance && deltaZ <= tolerance;
 };
-
-const dataset: ICombinedPipe = {
-  sections: [
-    {
-      startPoint: new THREE.Vector3(0, 0, 0),
-      endPoint: new THREE.Vector3(5, 0, 0),
-      pipeCount: 3,
-      type: 'straight',
-      orientation: 'North'
-    },
-    {
-      startPoint: new THREE.Vector3(5, 0, 0),
-      endPoint: new THREE.Vector3(5, 5, 0),
-      pipeCount: 2,
-      type: 'curve',
-      orientation: 'North'
-    },
-    {
-      startPoint: new THREE.Vector3(5, 5, 0),
-      endPoint: new THREE.Vector3(10, 5, 0),
-      pipeCount: 4,
-      type: 'straight',
-      orientation: 'North'
-    }
-  ],
-  totalPipeCount: 3 + 2 + 4 // Summe der Rohre in allen Abschnitten
-}
