@@ -1,5 +1,5 @@
 import type { IEntity, ICombinedPipe, IPipeInfo } from '@/types/placedEntites'
-import { turnLeft, turnRight, reverseCombinedPipe, pointsOverlapping } from '@/utils/placedEntities/placedEntities'
+import { turnLeft, turnRight, reverseCombinedPipe, pointsOverlapping, weldPointsOfCombinedPipes } from '@/utils/placedEntities/placedEntities'
 import { getCenterPoint } from '@/utils/rotation/rotate'
 import { roundVector } from '@/utils/threeJS/helpFunctions'
 import * as THREE from 'three'
@@ -87,6 +87,7 @@ export class PlacedEntities {
     const allPipes = [...this.getAllCurvedSinglePipes(), ...this.getAllStraightSinglePipes()]
     let out: ICombinedPipe[] = []
 
+    // create all
     allPipes.forEach((currentPipe) => {
       let rotatedLeft = this.findCombinedPipe(currentPipe.startPoint, true, out)
       let rotatedRight = this.findCombinedPipe(currentPipe.endPoint, false, out)
@@ -131,6 +132,10 @@ export class PlacedEntities {
         out = out.filter((pipe) => pipe !== right)
       }
     })
+
+    // weld points
+    out.forEach((combinedPipe) => weldPointsOfCombinedPipes(combinedPipe))
+
     return out
   }
 

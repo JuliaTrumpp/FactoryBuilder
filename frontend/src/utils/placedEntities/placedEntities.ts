@@ -61,7 +61,13 @@ export const pointsOverlapping = (p1: THREE.Vector3, p2: THREE.Vector3): boolean
   const deltaY = Math.abs(p1.y - p2.y)
   const deltaZ = Math.abs(p1.z - p2.z)
 
-  console.log(deltaX, deltaY, deltaZ)
-
   return deltaX <= tolerance && deltaY <= tolerance && deltaZ <= tolerance
+}
+
+export const weldPointsOfCombinedPipes = (toWeld: ICombinedPipe): void => {
+  for(let i = 0; i <= toWeld.sections.length - 2; i++){
+    const left = toWeld.sections[i]
+    const right = toWeld.sections[i + 1]
+    left.endPoint = right.startPoint.clone()
+  }
 }
