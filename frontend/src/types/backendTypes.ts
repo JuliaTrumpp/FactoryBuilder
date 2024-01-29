@@ -1,9 +1,11 @@
+import type { ICompass } from "@/classes/placedEntities/placedEntities";
+
 export interface IBackendEntity {
     x: number;
     y: number;
     z: number;
     path: string; 
-    orientation: string;
+    orientation: ICompass;
     factoryid: string;
     id:number;
     modelId: string;

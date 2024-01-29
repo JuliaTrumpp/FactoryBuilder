@@ -1,5 +1,7 @@
+import type { IEntity, ICombinedPipe, IPipeInfo } from '@/types/placedEntites'
+import { turnLeft, turnRight, reverseCombinedPipe, pointsOverlapping, weldPointsOfCombinedPipes } from '@/utils/placedEntities/placedEntities'
 import { getCenterPoint } from '@/utils/rotation/rotate'
-import { drawBox, drawLine } from '@/utils/threeJS/helpFunctions';
+import { roundVector } from '@/utils/threeJS/helpFunctions'
 import * as THREE from 'three'
 
 /**
@@ -7,10 +9,10 @@ import * as THREE from 'three'
  */
 export class PlacedEntities {
   private allEntities: IEntity[] = []
-  private sceneRef: THREE.Scene;
+  private sceneRef: THREE.Scene
 
   constructor(sceneRef: THREE.Scene) {
-    this.sceneRef = sceneRef;
+    this.sceneRef = sceneRef
   }
 
   /**
@@ -41,33 +43,10 @@ export class PlacedEntities {
   public getAllEntities = (): IEntity[] => this.allEntities
 
   /**
-   * Single Pipe Actions
+   * Get Point
    */
-  public getAllStraightSinglePipes = (): IEntity[] => {
-    return this.allEntities.filter((entity) => entity.modelId === 'pipe_straight')
-  }
 
-  public getAllCurvedPipes = (): {
-    startPoint: THREE.Vector3
-    endPoint: THREE.Vector3
-  }[] => {
-    const allCurvedPipes = this.allEntities.filter((entity) => entity.modelId === 'pipe_curved')
-    const out : {
-      startPoint: THREE.Vector3
-      endPoint: THREE.Vector3
-    }[] = []
-
-    allCurvedPipes.forEach((mesh) => {
-      out.push({
-        startPoint: this.getPointsFromStraightSinglePipe(mesh).startPoint.clone(),
-        endPoint: this.getPointsFromStraightSinglePipe(mesh).endPoint.clone()
-      })
-    })
-
-    return out;
-  }
-
-  public getPointsFromStraightSinglePipe = (
+  public getPointsFromSinglePipe = (
     pipe: IEntity
   ): { startPoint: THREE.Vector3; endPoint: THREE.Vector3 } => {
     const pipeEntrance = pipe.threejsObject.children.find(
@@ -89,124 +68,133 @@ export class PlacedEntities {
     }
   }
 
-  /**
-   * Pipe System
-   *
-   * TODO: Auch rotierte Pipes also | start - end end - start|
-   */
-
-  public getAllPipes = (): {
+  public getPointsFromCombinedPipe = (
+    combinedPipes: ICombinedPipe
+  ): {
     startPoint: THREE.Vector3
     endPoint: THREE.Vector3
-    pipeCount: number
-    type: string
-  }[] => {
-    return []
+  } => {
+    return {
+      startPoint: combinedPipes.sections[0].startPoint,
+      endPoint: combinedPipes.sections[combinedPipes.sections.length - 1].endPoint
+    }
   }
 
-  public getAllStraightPipes = (): {
-    startPoint: THREE.Vector3
-    endPoint: THREE.Vector3
-    pipeCount: number
-  }[] => {
-    let out: { startPoint: THREE.Vector3; endPoint: THREE.Vector3; pipeCount: number }[] = []
+  /**
+   * Get Pipes algorithmisch
+   */
+  public getAllCombinedPipes = (): ICombinedPipe[] => {
+    const allPipes = [...this.getAllCurvedSinglePipes(), ...this.getAllStraightSinglePipes()]
+    let out: ICombinedPipe[] = []
 
-    this.getAllStraightSinglePipes().forEach((currentPipe) => {
-      let currentStartPoint = this.getPointsFromStraightSinglePipe(currentPipe).startPoint.clone()
-      let currentEndPoint = this.getPointsFromStraightSinglePipe(currentPipe).endPoint.clone()
-      let isPartOfBiggerPipe = false
+    // create all
+    allPipes.forEach((currentPipe) => {
+      let rotatedLeft = this.findCombinedPipe(currentPipe.startPoint, true, out)
+      let rotatedRight = this.findCombinedPipe(currentPipe.endPoint, false, out)
+      let left = this.findCombinedPipe(currentPipe.startPoint, false, out)
+      let right = this.findCombinedPipe(currentPipe.endPoint, true, out)
 
-      
-      // console.log(currentEndPoint, "rounded to", roundVector(currentEndPoint))
-      // console.log(currentStartPoint, "rounded to",roundVector(currentEndPoint))
-      out.forEach((wholePipe) => {
+      if (rotatedLeft) {
+        reverseCombinedPipe(rotatedLeft)
+        left = rotatedLeft
+      }
 
-        if (currentStartPoint.clone().round().equals(wholePipe.endPoint.clone().round())) {
-          // Nachbar links gefunden
-          wholePipe.endPoint = currentEndPoint
-          wholePipe.pipeCount++
-          isPartOfBiggerPipe = true
+      if (rotatedRight) {
+        reverseCombinedPipe(rotatedRight)
+        right = rotatedRight
+      }
 
-          let potentialOtherRight = out.find(({ startPoint }) =>
-            currentEndPoint.clone().round().equals(startPoint.clone().round())
-          )
+      // Keine Nachbarn gefunden
+      if (!left && !right) {
+        out.push({
+          sections: [currentPipe],
+          totalPipeCount: currentPipe.pipeCount
+        })
+      }
 
-          // Potentieller nachbar für rechts suchen
-          if (potentialOtherRight) {
-            // Deleting other
-            out = out.filter((pipe) => pipe != potentialOtherRight)
+      // Nur auf der linken Seite gefunden
+      if (left && !right) {
+        left.sections.push(currentPipe)
+        left.totalPipeCount += currentPipe.pipeCount
+      }
 
-            // Extending
-            wholePipe.endPoint = potentialOtherRight.endPoint
-            wholePipe.pipeCount += potentialOtherRight.pipeCount
-          }
-        } else if (currentEndPoint.clone().round().equals(wholePipe.startPoint.clone().round())) {
-          // Nachbar rechts gefunden
-          wholePipe.startPoint = currentStartPoint
-          wholePipe.pipeCount++
-          isPartOfBiggerPipe = true
+      // Nur auf der rechten Seite gefunden
+      if (!left && right) {
+        right.sections.unshift(currentPipe)
+        right.totalPipeCount += currentPipe.pipeCount
+      }
 
-          let potentialOtherLeft = out.find(({ endPoint }) =>
-            currentStartPoint.clone().round().equals(endPoint.clone().round())
-          )
-
-          if (potentialOtherLeft) {
-            // Deleting other
-            out = out.filter((pipe) => pipe != potentialOtherLeft)
-
-            // Extending
-            wholePipe.startPoint = potentialOtherLeft.startPoint
-            wholePipe.pipeCount += potentialOtherLeft.pipeCount
-          }
-        }
-      })
-
-      if (!isPartOfBiggerPipe) {
-        out.push({ startPoint: currentStartPoint, endPoint: currentEndPoint, pipeCount: 1 })
+      // Auf beiden Seiten gefunden, kombinieren
+      if (right && left) {
+        left.sections.push(currentPipe)
+        left.sections.push(...right.sections)
+        left.totalPipeCount += right.totalPipeCount + currentPipe.pipeCount
+        out = out.filter((pipe) => pipe !== right)
       }
     })
 
+    // weld points
+    out.forEach((combinedPipe) => weldPointsOfCombinedPipes(combinedPipe))
+
     return out
   }
-}
 
-export type IEntity = {
-  id: number // Wie im backend
-  modelId: string // Modelname
-  uuid: string // UUID vom threejs object
-  orientation: string
-  threejsObject: THREE.Object3D
-}
 
-/**
- * Helper
- */
-const turnLeft = (orientation: string): string => {
-  switch (orientation) {
-    case 'North':
-      return 'West'
-    case 'West':
-      return 'South'
-    case 'South':
-      return 'East'
-    case 'East':
-      return 'North'
-    default:
-      return orientation
+  /**
+   * Get Pipes primitive
+   */
+  public getAllStraightSinglePipes = (): IPipeInfo[] => {
+    return this.allEntities
+      .filter((entity) => entity.modelId === 'pipe_straight')
+      .map((mesh) => {
+        return {
+          startPoint: this.getPointsFromSinglePipe(mesh).startPoint.clone(),
+          endPoint: this.getPointsFromSinglePipe(mesh).endPoint.clone(),
+          pipeCount: 1,
+          type: 'straight',
+          orientation: mesh.orientation
+        }
+      })
   }
-}
 
-const turnRight = (orientation: string): string => {
-  switch (orientation) {
-    case 'North':
-      return 'East'
-    case 'East':
-      return 'South'
-    case 'South':
-      return 'West'
-    case 'West':
-      return 'North'
-    default:
-      return orientation
+  public getAllCurvedSinglePipes = (): IPipeInfo[] => {
+    return this.allEntities
+      .filter((entity) => entity.modelId === 'pipe_curved')
+      .map((mesh) => {
+        return {
+          startPoint: this.getPointsFromSinglePipe(mesh).startPoint.clone(),
+          endPoint: this.getPointsFromSinglePipe(mesh).endPoint.clone(),
+          pipeCount: 1,
+          type: 'curve',
+          orientation: mesh.orientation
+        }
+      })
+  }
+
+  /**
+   * Find Pipe by point
+   */
+
+  public findCombinedPipe = (
+    point: THREE.Vector3,
+    isStartPoint: boolean,
+    all: ICombinedPipe[]
+  ): ICombinedPipe | undefined => {
+    return all.find((combinedPipe) => {
+      const { startPoint, endPoint } = this.getPointsFromCombinedPipe(combinedPipe)
+      const targetPoint = isStartPoint ? startPoint : endPoint
+      return pointsOverlapping(targetPoint, point)
+    })
+  }
+
+  public findSinglePipe = (
+    point: THREE.Vector3,
+    isStartPoint: boolean,
+    all: IPipeInfo[]
+  ): IPipeInfo | undefined => {
+    return all.find(({ startPoint, endPoint }) => {
+      const targetPoint = isStartPoint ? startPoint : endPoint
+      return pointsOverlapping(targetPoint, point)
+    })
   }
 }
