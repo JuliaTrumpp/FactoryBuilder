@@ -1,6 +1,6 @@
 import type { IEntity, ICombinedPipe, IPipeInfo } from '@/types/placedEntites'
 import { turnLeft, turnRight, reverseCombinedPipe, pointsOverlapping, weldPointsOfCombinedPipes } from '@/utils/placedEntities/placedEntities'
-import { getCenterPoint } from '@/utils/rotation/rotate'
+import {getCenterPoint, rotateModelFromXtoY} from '@/utils/rotation/rotate'
 import * as THREE from 'three'
 
 /**
@@ -17,7 +17,11 @@ export class PlacedEntities {
   /**
    * Single Entity Operations
    */
-  public add = (entity: IEntity) => this.allEntities.push(entity)
+  public add = (entity: IEntity) => {
+    this.allEntities.push(entity)
+    if (entity.orientation === "North") return
+    rotateModelFromXtoY("North", entity.orientation, entity.threejsObject, this, false)
+  }
 
   public updateLastId = (id: number) => {
     const lastIndex = this.allEntities.length - 1

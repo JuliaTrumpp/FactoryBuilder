@@ -316,6 +316,7 @@ const handleKeyDown = (event: KeyboardEvent) => {
   switch (event.key.toUpperCase()) {
     case 'V':
       if (manipulationMode.value === ManipulationMode.ROTATE) {
+        console.log("from: ", originalOrientation, "to: ", placedEntities.getByUUID(currentObjectSelected.uuid).orientation)
         rotationRequest({
           id: placedEntities.getByUUID(currentObjectSelected.uuid).id,
           orientation: placedEntities.getByUUID(currentObjectSelected.uuid).orientation,
@@ -328,7 +329,8 @@ const handleKeyDown = (event: KeyboardEvent) => {
                     originalOrientation,
                     placedEntities.getByUUID(currentObjectSelected.uuid).orientation,
                     currentObjectSelected,
-                    placedEntities
+                    placedEntities,
+                    true
                 )
               }
             })
