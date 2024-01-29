@@ -61,9 +61,6 @@ public class EntityRestAPIController {
        AbstractModel abstractModel = abstractModelService.createPlacedModel(model, pos, placeRequestDTO.factoryID());
 
 
-        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, abstractModel.getId(), MessageOperationType.UPDATE), abstractModel.getFactory().getFactoryID());
-
-
        if (abstractModel == null) {
 
            // return conflict status (HTTP 409) when placedModel is null
@@ -71,7 +68,7 @@ public class EntityRestAPIController {
        }
 
        LOGGER.info("placed Model with placedModelID: " + abstractModel.getId() + " and modelID: " + model.getId() + " ('" + abstractModel.getName() + "')");
-
+       frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, abstractModel.getId(), MessageOperationType.UPDATE), abstractModel.getFactory().getFactoryID());
        // Entity wir in Datenbank erzeugt, und id wird gesendet
        return ResponseEntity.ok(abstractModel.getId());
     }

@@ -15,7 +15,7 @@ class StompClientBuilder {
   private placedEntites: PlacedEntities
 
   constructor(factoryID: number, placedEntites: any) {
-    this.placedEntites = placedEntites!!
+    this.placedEntites = placedEntites
     this.factoryID = factoryID
     this.client = new Client({
       brokerURL: 'ws://localhost:8080/stompbroker',

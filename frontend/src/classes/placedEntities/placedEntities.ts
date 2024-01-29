@@ -21,7 +21,7 @@ export class PlacedEntities {
    * Single Entity Operations
    */
   public add = (entity: IEntity) => {
-    console.log(entity)
+    console.log(this.allEntities)
     this.allEntities.push(entity)
   }
 
@@ -38,20 +38,21 @@ export class PlacedEntities {
 
   public getByUUID = (uuid: string): IEntity => {
     const entity = this.allEntities.find((e) => e.uuid === uuid)
-    if (!entity) throw new Error('Entity not found')
+    if (!entity) throw new Error('Entity not found (by uuid)')
     return entity
   }
   public getByID = (id: number): IEntity => {
-    const entity = this.allEntities.find((e) => e.id === id)
-    if (!entity) throw new Error('Entity not found')
+    const entity = this.allEntities.find((e) => e.id == id)
+    if (!entity) throw new Error('Entity not found (by id)')
     return entity
   }
 
   public updateByID = async (id: number, situation?: string) => {
-    console.log(this.allEntities)
     const entity = this.getByID(id)
     switch(situation) {
       case "DELETE":
+        console.log(entity)
+        this.sceneRef.remove(entity.threejsObject)
         this.deleteByUUID(entity.uuid)
         break
         case "UPDATE":
