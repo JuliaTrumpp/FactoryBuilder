@@ -86,10 +86,10 @@ public class EntityRestAPIController {
     @PostMapping("/rotate")
     public ResponseEntity<Boolean> rotate(@RequestBody RotateRequestDTO rotateRequestDTO) {
         boolean rotated = manipulateAbstractModelService.rotateModel(rotateRequestDTO.id(), rotateRequestDTO.orientation());
-        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, rotateRequestDTO.id(), MessageOperationType.DELETE), rotateRequestDTO.factoryID());
-
+        
         LOGGER.info("rotate entity: " + String.valueOf(rotateRequestDTO.id()) + " is " + String.valueOf(rotated));
-
+        
+        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, rotateRequestDTO.id(), MessageOperationType.ROTATE), rotateRequestDTO.factoryID());
         return ResponseEntity.ok(rotated);
     }
 
@@ -135,7 +135,6 @@ public class EntityRestAPIController {
             } else {
                 LOGGER.info("Script ist null (in DB).");
             }
-            //return scriptContent;
 
         } catch(NoSuchElementException e) {
             LOGGER.info("Script konnte nicht gespeichert werden, da es modelId in DB nicht gefunden wurde.", e.getCause());
@@ -163,7 +162,7 @@ public class EntityRestAPIController {
             LOGGER.info("ModelId wurde in DB nicht gefunden -> Script kann nicht gespeichert werden.", e.getCause());
         }
 
-        // PS: nur script wird in DB gespeichert, user- & systemProperties werden bei jedem get-Aufruf neu aus Skript interpretiert
+        // nur script wird in DB gespeichert, user- & systemProperties werden bei jedem get-Aufruf neu aus Skript interpretiert
     }
 
 
