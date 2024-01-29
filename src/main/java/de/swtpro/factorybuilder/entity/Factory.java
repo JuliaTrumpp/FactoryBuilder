@@ -2,10 +2,6 @@ package de.swtpro.factorybuilder.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import org.w3c.dom.html.HTMLImageElement;
-
-import java.awt.image.BufferedImage;
 import java.io.Serializable;
 
 @Entity
@@ -92,5 +88,7 @@ public class  Factory implements Serializable {
 
     public void setId(long id) { this.id = id;}
 
-
+    public long getVersion() {
+        return version;
+    }
 }

@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import {type Ref, ref, watch, onMounted} from 'vue'
-import type {IFactory} from '@/types/backendTypes'
-import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
-import { XMarkIcon } from '@heroicons/vue/24/outline'
+import {onMounted, ref, type Ref, watch} from 'vue'
+import {Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot} from '@headlessui/vue'
+import {XMarkIcon} from '@heroicons/vue/24/outline'
 import router from "@/router";
 import Button from "@/components/button/Button.vue";
-import {logoutUser, leaveFactory} from "@/utils/backend-communication/postRequests";
+import {leaveFactory} from "@/utils/backend-communication/postRequests";
 import {useSessionUser} from "@/utils/composition-functions/useSessionUser";
-import {useFactory} from "@/utils/composition-functions/useFactory";
-import { getAllUsersInFactory } from '@/utils/backend-communication/getRequests';
+import {getAllUsersInFactory} from '@/utils/backend-communication/getRequests';
+
 const emit = defineEmits<{
   closeSideBar: [boolean];
 }>()
@@ -47,8 +46,7 @@ onMounted(async () => {
   
   const factoryId = props.factoryID; 
   try {
-    const users = await getAllUsersInFactory(factoryId);
-    factoryUsers.value = users;
+    factoryUsers.value = await getAllUsersInFactory(factoryId);
   } catch (error) {
     console.error('Error fetching factory users:', error);
   }
@@ -71,7 +69,7 @@ onMounted(async () => {
               <DialogPanel class="pointer-events-auto relative w-screen max-w-sm">
                 <TransitionChild as="template" enter="ease-in-out duration-500" enter-from="opacity-0" enter-to="opacity-100" leave="ease-in-out duration-500" leave-from="opacity-100" leave-to="opacity-0">
                   <div class="absolute left-0 top-0 -ml-8 flex pr-2 pt-4 sm:-ml-10 sm:pr-4" id="ignore">
-                    <button type="button" class="relative rounded-md text-gray-300 hover:text-white bg-transparent border-transparent focus:outline-none focus:ring-2 focus:ring-white" @click="open = false" id="ignore">
+                    <button type="button" class="relative rounded-md text-gray-300 hover:text-white bg-transparent border-transparent focus:outline-none focus:ring-2 focus:ring-white" @click="open = false" id="ignore" link="">
                       <span class="absolute -inset-2.5" id="ignore"/>
                       <span class="sr-only" id="ignore">Close panel</span>
                       <XMarkIcon class="h-6 w-6" aria-hidden="true" id="ignore"/>

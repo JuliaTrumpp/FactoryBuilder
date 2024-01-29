@@ -82,6 +82,12 @@ export interface IEntityMove {
     y: number;
     z: number;
 }
+
+// Model scripting
+export interface IModelScripting {
+    id: number;
+}
+ 
 export interface IFactory {
     id: number;
     name: string;
@@ -100,4 +106,14 @@ export interface IUserForm{
 export interface ILoginForm{
     username: string;
     password: string;
+}
+
+export interface ISystemProperty{
+    property: string;
+    value: string;
+}
+
+export interface IUserProperty{
+    property: string;
+    value: string;
 }

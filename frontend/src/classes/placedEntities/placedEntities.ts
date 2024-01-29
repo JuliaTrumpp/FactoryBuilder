@@ -20,6 +20,16 @@ export class PlacedEntities {
    */
   public add = (entity: IEntity) => this.allEntities.push(entity)
 
+  public updateLastId = (id: number) => {
+    const lastIndex = this.allEntities.length - 1
+    if (lastIndex >= 0) {
+      this.allEntities[lastIndex].id = id
+    }
+  }
+  public pop = () => {
+    return this.allEntities.pop()
+  }
+
   public getByUUID = (uuid: string): IEntity => {
     const entity = this.allEntities.find((e) => e.uuid === uuid)
     if (!entity) throw new Error('Entity not found')

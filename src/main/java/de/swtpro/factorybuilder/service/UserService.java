@@ -3,8 +3,6 @@ package de.swtpro.factorybuilder.service;
 import java.util.List;
 import java.util.Optional;
 
-import de.swtpro.factorybuilder.entity.Factory;
-import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
