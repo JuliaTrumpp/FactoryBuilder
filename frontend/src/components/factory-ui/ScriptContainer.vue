@@ -19,19 +19,18 @@ const userProperties: Ref<IUserProperty[]> = ref([])
 
 
 onMounted(() => {
-  // console.log("modelId, die get-Methode übergeben wird: ", props.model.id)
+
+  // fetch scriptContent, systemProperties and userProperties
+
   getScriptingContent(props.model.id).then((scriptingContent) => {
     console.log("___SCRIPTING CONTENT___: ", scriptingContent);
-    if(scriptingContent != "") {
+    if(scriptingContent != "") {  // show default text, if nothing in DB
       scriptContent.value = scriptingContent.toString();
-      editor.setValue(scriptContent.value); //TODO: Warum muss man hier noch .toString() schreiben, wenn wir doch schon einen String bekommen?
-    } else {
-      scriptContent.value = "Script wurde versucht zu ziehen war aber noch leer in DB";
+      editor.setValue(scriptContent.value); 
     }
     console.log(scriptContent.value)
   })
   
-  // fetch to get all existing system-props for this model from DB 
   getAllSystemProperties(props.model?.id).then((json) => {
     systemProperties.value = json
     console.log(json)
@@ -61,28 +60,7 @@ onMounted(() => {
       });
     }, 2000);
 
-
-  // Versuche, dass der neue wert aus der DB angezeigt wird (scriptContent überschrieben wird)
-
-  //   setTimeout(() => {
-  //   const newScriptContent = scriptContent.value;
-  //   editor.setValue(newScriptContent);
-  //   }, 5000);
-  
-  // setTimeout(() => {
-  //   const newScriptContent = "# Neuer Inhalt nach 5 Sekunden";
-
-  //   // Holen Sie sich das aktuelle Modell des Editors
-  //   const model = editor.getModel();
-
-  //   // Setzen Sie den neuen Wert für das Modell
-  //   if (model) {
-  //     model.setValue(newScriptContent);
-  //   }
-  // }, 5000);
-
   }
-
 
 });
 
@@ -175,39 +153,3 @@ onBeforeUnmount(() => {
   margin: 0.5rem;
 }
 </style>
-
-
-
-
-
-<!--was noch fehlt (u.a.)
-
-- userProperties und systemProperties beim oeffnen des components befuellen mit Werten die vom backend kommen - BE interpretiert code und gibt Variablen raus
-
-stand 23.01.2024
-- maybe in file-bytearray oder so statt als string speichern in DB 
-- layout überarbeiten siehe wireframe 
-
- 
-
-
-
-  // const onMonacoInit = () => {       // komischer vorschlag von chat wegen monacoeditor zeug
-  //   if (containerRef.value) {
-  //     editor = monaco.editor.create(containerRef.value, {
-  //       // ... (dein bestehender Code)
-  //     });
-  
-  //     setTimeout(() => {
-  //       editor.updateOptions({
-  //         lineNumbers: 'on',
-  //       });
-  //     }, 2000);
-  //   }
-  // }; 
-
-
-  // monaco.editor.getModels()[0].onWillDispose(() => {    
-  //   onMonacoInit();
-  // }); 
--->

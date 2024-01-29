@@ -119,7 +119,6 @@ public class EntityRestAPIController {
             } else {
                 LOGGER.info("Script ist null (in DB).");
             }
-            //return scriptContent;
 
         } catch(NoSuchElementException e) {
             LOGGER.info("Script konnte nicht aus DB geholt werden, da diese modelId in DB nicht gefunden wurde.", e.getCause());
@@ -146,8 +145,7 @@ public class EntityRestAPIController {
         } catch (NoSuchElementException e) {
             LOGGER.info("ModelId wurde in DB nicht gefunden -> Script kann nicht gespeichert werden.", e.getCause());
         }
-
-        // PS: nur script wird in DB gespeichert, user- & systemProperties werden bei jedem get-Aufruf neu aus Skript interpretiert
+        // nur script wird in DB gespeichert, user- & systemProperties werden bei jedem get-Aufruf neu aus Skript interpretiert
     }
 
 
