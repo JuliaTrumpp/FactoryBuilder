@@ -331,29 +331,13 @@ export const drawBox = (object: THREE.Object3D, scene: THREE.Scene): void => {
 
 export const roundVector = (vector: THREE.Vector3): THREE.Vector3 =>  {
   const v = vector.clone();
-  v.x = roundToHalf(v.x)
-  v.y = roundToHalf(v.y);
-  v.z = roundToHalf(v.z);
+  v.x = round(v.x)
+  v.y = round(v.y);
+  v.z = round(v.z);
   return v;
 }
 
-export const roundToHalf = (value: number): number =>  {
-  // Berechnen Sie den Dezimalteil der Zahl
-  const decimal: number = (value - parseInt(value.toString(), 10));
-  
-  // Runden Sie den Dezimalteil auf die nächste Zehntelstelle
-  const roundedDecimal: number = Math.round(decimal * 10);
-  
-  // Überprüfen Sie den Wert des Dezimalteils
-  if (roundedDecimal === 5) {
-    // Wenn genau 5, geben Sie den ganzzahligen Teil plus 0.5 zurück
-    return parseInt(value.toString(), 10) + 0.5;
-  } else if (roundedDecimal < 3 || roundedDecimal > 7) {
-    // Wenn weniger als 3 oder größer als 7, runden Sie die gesamte Zahl
-    return Math.round(value);
-  } else {
-    // Andernfalls geben Sie den ganzzahligen Teil plus 0.5 zurück
-    return parseInt(value.toString(), 10) + 0.5;
-  }
+export const round = (value: number): number =>  {
+  return Math.round(value * 10) / 10;
 }
 

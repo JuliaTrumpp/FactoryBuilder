@@ -110,71 +110,66 @@ export class PlacedEntities {
    * Get Pipes
    */
   public getAllPipes = (): ICombinedPipe[] => {
-    const allPipes = [...this.getAllCurvedPipes(), ...this.getAllStraightPipes()]
-    let out: ICombinedPipe[] = []
-
+    const allPipes = [...this.getAllCurvedPipes(), ...this.getAllStraightPipes()];
+    let out: ICombinedPipe[] = [];
+  
     allPipes.forEach((currentPipe) => {
-      const rotatedRight = out.find((combinedPipe) => {
-        const { startPoint } = this.getEndPointsFromCombinedPipes(combinedPipe)
-        return roundVector(startPoint).equals(roundVector(currentPipe.startPoint))
-      })
 
-      const rotatedLeft = out.find((combinedPipe) => {
-        const { endPoint } = this.getEndPointsFromCombinedPipes(combinedPipe)
-        return roundVector(endPoint).equals(roundVector(currentPipe.endPoint))
-      })
-
-      let left = out.find((combinedPipe) => {
-        const { endPoint } = this.getEndPointsFromCombinedPipes(combinedPipe)
-        return roundVector(endPoint).equals(roundVector(currentPipe.startPoint))
-      })
-
-      let right = out.find((combinedPipe) => {
-        const { startPoint } = this.getEndPointsFromCombinedPipes(combinedPipe)
-        return roundVector(startPoint).equals(roundVector(currentPipe.endPoint))
-      })
-
-      // console.log(right, left, rotatedRight, rotatedLeft)
-
-      // if (rotatedLeft) {
-      //   left = reverseCombinedPipe(rotatedLeft)
-      // }
-
-      // if (rotatedRight) {
-      //   right = reverseCombinedPipe(rotatedRight)
-      // }
-
-      // Keine nachbarn gefunden
+      let findCombinedPipe = (point: THREE.Vector3, isStartPoint:boolean) => {        
+        return out.find((combinedPipe) => {
+          const { startPoint, endPoint } = this.getEndPointsFromCombinedPipes(combinedPipe);
+          const targetPoint = isStartPoint ? startPoint : endPoint;
+          return pointsOverlapping(targetPoint, point);
+        });
+      };
+  
+      let rotatedLeft = findCombinedPipe(currentPipe.startPoint, true);
+      let rotatedRight = findCombinedPipe(currentPipe.endPoint, false);
+      let left = findCombinedPipe(currentPipe.startPoint, false);
+      let right = findCombinedPipe(currentPipe.endPoint, true);
+  
+      if (rotatedLeft) {
+        reverseCombinedPipe(rotatedLeft);
+        left = rotatedLeft;
+      }
+  
+      if (rotatedRight) {
+        reverseCombinedPipe(rotatedRight);
+        right = rotatedRight;
+      }
+  
+      // Keine Nachbarn gefunden
       if (!left && !right) {
         out.push({
           sections: [currentPipe],
-          totalPipeCount: currentPipe.pipeCount
-        })
+          totalPipeCount: currentPipe.pipeCount,
+        });
       }
-
-      // Only found on left side
+  
+      // Nur auf der linken Seite gefunden
       if (left && !right) {
-        left.sections.push(currentPipe)
-        left.totalPipeCount += currentPipe.pipeCount
+        left.sections.push(currentPipe);
+        left.totalPipeCount += currentPipe.pipeCount;
       }
-
-      // Only found on right site
+  
+      // Nur auf der rechten Seite gefunden
       if (!left && right) {
-        right.sections.unshift(currentPipe)
-        right.totalPipeCount += currentPipe.pipeCount
+        right.sections.unshift(currentPipe);
+        right.totalPipeCount += currentPipe.pipeCount;
       }
-
-      // found on both sides delete
+  
+      // Auf beiden Seiten gefunden, kombinieren
       if (right && left) {
-        left.sections.push(currentPipe)
-        left.sections.push(...right.sections)
-        left.totalPipeCount += right.totalPipeCount + currentPipe.pipeCount
-        out = out.filter((pipe) => pipe !== right)
+        left.sections.push(currentPipe);
+        left.sections.push(...right.sections);
+        left.totalPipeCount += right.totalPipeCount + currentPipe.pipeCount;
+        out = out.filter((pipe) => pipe !== right);
       }
-    })
-    console.log(out)
-    return out
-  }
+    });
+  
+    console.log(out);
+    return out;
+  };
 
   public getAllStraightPipes = (): IPipeInfo[] => {
     let out: IPipeInfo[] = []
@@ -307,25 +302,34 @@ const turnRight = (orientation: ICompass): ICompass => {
   }
 }
 
-const reverseCombinedPipe = (toReverse: ICombinedPipe): ICombinedPipe => {
-  return {
-    totalPipeCount: toReverse.totalPipeCount,
-    sections: toReverse.sections
-      .map(({ startPoint, endPoint, pipeCount, type, orientation }) => {
-        const start = startPoint.clone()
-        const end = endPoint.clone()
+const reverseCombinedPipe = (toReverse: ICombinedPipe): void => {
+  toReverse.sections = toReverse.sections
+    .map(({ startPoint, endPoint, pipeCount, type, orientation }) => {
+      const start = startPoint.clone()
+      const end = endPoint.clone()
 
-        return {
-          startPoint: end,
-          endPoint: start,
-          pipeCount: pipeCount,
-          type: type,
-          orientation: orientation
-        }
-      })
-      .reverse()
-  }
+      return {
+        startPoint: end,
+        endPoint: start,
+        pipeCount: pipeCount,
+        type: type,
+        orientation: orientation
+      }
+    })
+    .reverse()
 }
+
+const pointsOverlapping = (p1: THREE.Vector3, p2: THREE.Vector3): boolean => {
+  const tolerance = 0.15;
+
+  const deltaX = Math.abs(p1.x - p2.x);
+  const deltaY = Math.abs(p1.y - p2.y);
+  const deltaZ = Math.abs(p1.z - p2.z);
+
+  console.log(deltaX, deltaY, deltaZ)
+
+  return deltaX <= tolerance && deltaY <= tolerance && deltaZ <= tolerance;
+};
 
 const dataset: ICombinedPipe = {
   sections: [
@@ -334,21 +338,21 @@ const dataset: ICombinedPipe = {
       endPoint: new THREE.Vector3(5, 0, 0),
       pipeCount: 3,
       type: 'straight',
-      orientation:"North"
+      orientation: 'North'
     },
     {
       startPoint: new THREE.Vector3(5, 0, 0),
       endPoint: new THREE.Vector3(5, 5, 0),
       pipeCount: 2,
       type: 'curve',
-      orientation:"North"
+      orientation: 'North'
     },
     {
       startPoint: new THREE.Vector3(5, 5, 0),
       endPoint: new THREE.Vector3(10, 5, 0),
       pipeCount: 4,
       type: 'straight',
-      orientation:"North"
+      orientation: 'North'
     }
   ],
   totalPipeCount: 3 + 2 + 4 // Summe der Rohre in allen Abschnitten
