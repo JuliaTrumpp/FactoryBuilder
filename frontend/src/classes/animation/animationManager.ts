@@ -21,7 +21,7 @@ export class AnimationManager {
 
   startAnimation() {
     this.placedEntitesRef
-      .getAllPipes()
+      .getAllCombinedPipes()
       .forEach((pipe) => this.startAnimateObjectThroughPipe(pipe, this.mockModelUrl, 500))
   }
 
