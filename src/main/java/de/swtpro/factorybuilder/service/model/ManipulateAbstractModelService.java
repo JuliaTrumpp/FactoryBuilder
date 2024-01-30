@@ -71,59 +71,57 @@ public class ManipulateAbstractModelService implements PlacedModelServiceTemplat
         }
 
         AbstractModel tmpAbstractModel = tmpField.getPlacedModel();
-        if (tmpAbstractModel != null) {
-            // move case: if placedModel IDs match (no need to check)
-            if (thisModel.getId() == tmpAbstractModel.getId())
-                return true;
-
-            // zeigt mein input auf ein feld das kein output ist
-            if (!inputList.isEmpty()) {
-                for (Input i : inputList) {
-                    if (i.getOrientation().equals(ori)) {
-                        for (Output o : tmpAbstractModel.getOutputByPosition(tmpPosition)) {
-                            if (o.getOrientation().equals(counterOri))
-                                return true;
-                        }
-                    }
-                }
-                if (outputList.isEmpty()) return false;
-            }
-            // zeigt mein output auf ein feld das kein input ist
-            if (!outputList.isEmpty()) {
-                for (Output o : outputList) {
-                    if (o.getOrientation().equals(ori)) {
-                        for (Input i : tmpAbstractModel.getInputByPosition(tmpPosition))
-                            if (i.getOrientation().equals(counterOri))
-                                return true;
-                    }
-                }
-                String finalCounterOri = counterOri;
-                if (tmpAbstractModel.getInputs().stream().anyMatch(input -> input.getOrientation().equals(finalCounterOri)) ||
-                        tmpAbstractModel.getOutputs().stream().anyMatch(output -> output.getOrientation().equals(finalCounterOri)) ||
-                        thisModel.getInputs().stream().anyMatch(input -> input.getOrientation().equals(ori)) ||
-                        thisModel.getOutputs().stream().anyMatch(output -> output.getOrientation().equals(ori)))
-                return false;
-                else return true;
-            }
-            // zeigt mein feld auf ein feld das einen in/output in richtung meines feldes
-            // hat
-            else {
-                List<Output> placedModelOutputs = tmpAbstractModel.getOutputByPosition(tmpPosition);
-                List<Input> placedModelInputs = tmpAbstractModel.getInputByPosition(tmpPosition);
-                if (!placedModelOutputs.isEmpty()) {
-                    for (Output o : placedModelOutputs) {
-                        if (o.getOrientation().equals(counterOri) && thisModel.getId() != tmpAbstractModel.getId())
-                            return false;
-                    }
-                }
-                if (!placedModelInputs.isEmpty()) {
-                    for (Input i : placedModelInputs) {
-                        if (i.getOrientation().equals(counterOri) && thisModel.getId() != tmpAbstractModel.getId())
-                            return false;
-                    }
-                }
-            }
-        }
+//        if (tmpAbstractModel != null) {
+//            // move case: if placedModel IDs match (no need to check)
+//            if (thisModel.getId() == tmpAbstractModel.getId())
+//                return true;
+//
+//            // zeigt mein input auf ein feld das kein output ist
+//            if (!inputList.isEmpty()) {
+//                for (Input i : inputList) {
+//                    if (i.getOrientation().equals(ori)) {
+//                        for (Output o : tmpAbstractModel.getOutputByPosition(tmpPosition)) {
+//                            if (o.getOrientation().equals(counterOri))
+//                                return true;
+//                        }
+//                    }
+//                }
+//                if (outputList.isEmpty()) return false;
+//            }
+//            // zeigt mein output auf ein feld das kein input ist
+//            if (!outputList.isEmpty()) {
+//                for (Output o : outputList) {
+//                    if (o.getOrientation().equals(ori)) {
+//                        for (Input i : tmpAbstractModel.getInputByPosition(tmpPosition))
+//                            if (i.getOrientation().equals(counterOri))
+//                                return true;
+//                    }
+//                }
+//                String finalCounterOri = counterOri;
+//                return tmpAbstractModel.getInputs().stream().noneMatch(input -> input.getOrientation().equals(finalCounterOri)) &&
+//                        tmpAbstractModel.getOutputs().stream().noneMatch(output -> output.getOrientation().equals(finalCounterOri)) &&
+//                        thisModel.getInputs().stream().noneMatch(input -> input.getOrientation().equals(ori)) &&
+//                        thisModel.getOutputs().stream().noneMatch(output -> output.getOrientation().equals(ori));
+//            }
+//            // zeigt mein feld auf ein feld das einen in/output in richtung meines feldes
+//            // hat
+//            else {
+//                List<Output> placedModelOutputs = tmpAbstractModel.getOutputByPosition(tmpPosition);
+//                List<Input> placedModelInputs = tmpAbstractModel.getInputByPosition(tmpPosition);
+//                if (!placedModelOutputs.isEmpty()) {
+//                    for (Output o : placedModelOutputs) {
+//                        if (o.getOrientation().equals(counterOri) && thisModel.getId() != tmpAbstractModel.getId())
+//                            return false;
+//                    }
+//                }
+//                if (!placedModelInputs.isEmpty()) {
+//                    for (Input i : placedModelInputs) {
+//                        if (i.getOrientation().equals(counterOri) && thisModel.getId() != tmpAbstractModel.getId())
+//                            return false;
+//                    }
+//                }
+//            }
+//        }
         return true;
     }
 
