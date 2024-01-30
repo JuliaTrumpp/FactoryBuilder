@@ -12,10 +12,11 @@ import {
   turnRight,
   reverseCombinedPipe,
   pointsOverlapping,
-  weldPointsOfCombinedPipes
+  weldPointsOfCombinedPipes,
+  reverseSinglePipe
 } from '@/utils/placedEntities/placedEntities'
 import { getCenterPoint, rotateModelFromXtoY } from '@/utils/rotation/rotate'
-import { drawLine } from '@/utils/threeJS/helpFunctions'
+import { drawLine, drawPoint } from '@/utils/threeJS/helpFunctions'
 import * as THREE from 'three'
 import type { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { getEntityInFactory } from '@/utils/backend-communication/getRequests'
@@ -245,7 +246,7 @@ export class PlacedEntities {
    * Get Pipes algorithmisch
    */
   public getAllCombinedPipes = (): ICombinedPipe[] => {
-    const allPipes = [...this.getAllCurvedSinglePipes(), ...this.getAllStraightSinglePipes()]
+    const allPipes = [...this.getAllCurvedSinglePipes(), ...this.getAllStraightPipes()]
     let out: ICombinedPipe[] = []
 
     // create all
@@ -296,6 +297,63 @@ export class PlacedEntities {
 
     // weld points
     out.forEach((combinedPipe) => weldPointsOfCombinedPipes(combinedPipe))
+
+    return out
+  }
+
+  public getAllStraightPipes = (): IPipeInfo[] => {
+
+    let out: IPipeInfo[] = []
+
+
+
+    this.getAllStraightSinglePipes().forEach((currentPipe) => {
+
+    
+      const {startPoint, endPoint} = currentPipe;
+      let rotatedLeft = this.findSinglePipe(startPoint, true, out)
+      let rotatedRight = this.findSinglePipe(endPoint, false, out)
+      let left = this.findSinglePipe(startPoint, false, out)
+      let right = this.findSinglePipe(endPoint, true, out)
+
+      if (rotatedLeft) {
+        reverseSinglePipe(rotatedLeft)
+        left = rotatedLeft
+      }
+
+      if (rotatedRight) {
+        reverseSinglePipe(rotatedRight)
+        right = rotatedRight
+      }
+
+      // Keine Nachbarn gefunden
+      if (!left && !right) {
+        out.push(currentPipe)
+      }
+
+      // Nur auf der linken Seite gefunden
+      if (left && !right) {
+        left.endPoint = currentPipe.endPoint 
+        left.pipeCount += currentPipe.pipeCount
+      }
+
+      // Nur auf der rechten Seite gefunden
+      if (!left && right) {
+        right.startPoint = currentPipe.startPoint
+        right.pipeCount += currentPipe.pipeCount
+      }
+
+      // Auf beiden Seiten gefunden, kombinieren
+      if (right && left) {
+        left.endPoint = right.startPoint
+        left.pipeCount += right.pipeCount + currentPipe.pipeCount
+        out = out.filter((pipe) => pipe !== right)
+      }
+    })
+
+    out.forEach(({startPoint, endPoint}) => {
+      drawLine(startPoint, endPoint, this.sceneRef)
+    })
 
     return out
   }
@@ -364,7 +422,6 @@ export class PlacedEntities {
     let entryPoint = new THREE.Vector3()
     const machine = this.getMachines().find(({ entrances }) => {
       return entrances.find((possibleEntry) => {
-        drawLine(possibleEntry, possibleEntry, this.sceneRef)
         if (pointsOverlapping(possibleEntry, point)) {
           entryPoint = possibleEntry
           return true
@@ -410,15 +467,6 @@ export class PlacedEntities {
     let fullTrack: IItemTrack[] = []
     let newPipe: ICombinedPipe | undefined
 
-
-    console.log(this.allEntities)
-
-    this.getMachines().forEach((machine) => {
-      machine.entrances.forEach((exit) => {
-        drawLine(exit, exit, this.sceneRef)
-      })
-    })
-
     this.getRohstoffannahmeStartPoints().forEach((ausgabePoint) => {
       const newTrack: IItemTrack = []
       let ausgangspunkt = ausgabePoint
@@ -426,10 +474,8 @@ export class PlacedEntities {
       let prevMachine: { machine: IMaschineInfo; entry: THREE.Vector3 } | undefined = undefined
 
       while (true) {
-        // Pipe am ausgangspunkt ?
 
-        drawLine(ausgabePoint,ausgabePoint, this.sceneRef)
-        console.log(this.getAllCombinedPipes())
+        // Pipe am ausgangspunkt ?
         let pipe = this.findCombinedPipe(ausgangspunkt, true, this.getAllCombinedPipes())
         let rotatedPipe = this.findCombinedPipe(ausgangspunkt, false, this.getAllCombinedPipes())
 

@@ -324,6 +324,10 @@ export const drawLine = (start: IVector3, end: IVector3, scene: THREE.Scene): vo
   scene.add(line)
 }
 
+export const drawPoint = (p: THREE.Vector3, scene: THREE.Scene) => {
+  drawLine(p,p,scene)
+}
+
 export const drawBox = (object: THREE.Object3D, scene: THREE.Scene): void => {
   const box = new THREE.BoxHelper(object, 0xffff00)
   scene.add(box)
