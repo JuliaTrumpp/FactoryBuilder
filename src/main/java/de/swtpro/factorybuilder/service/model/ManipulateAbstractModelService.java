@@ -97,7 +97,13 @@ public class ManipulateAbstractModelService implements PlacedModelServiceTemplat
                                 return true;
                     }
                 }
+                String finalCounterOri = counterOri;
+                if (tmpAbstractModel.getInputs().stream().anyMatch(input -> input.getOrientation().equals(finalCounterOri)) ||
+                        tmpAbstractModel.getOutputs().stream().anyMatch(output -> output.getOrientation().equals(finalCounterOri)) ||
+                        thisModel.getInputs().stream().anyMatch(input -> input.getOrientation().equals(ori)) ||
+                        thisModel.getOutputs().stream().anyMatch(output -> output.getOrientation().equals(ori)))
                 return false;
+                else return true;
             }
             // zeigt mein feld auf ein feld das einen in/output in richtung meines feldes
             // hat
