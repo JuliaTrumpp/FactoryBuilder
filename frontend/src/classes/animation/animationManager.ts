@@ -21,6 +21,9 @@ export class AnimationManager {
     this.loaderRef = loaderRef
   }
 
+  private delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+
   // Controlls
 
   startAnimation() {
@@ -62,7 +65,10 @@ export class AnimationManager {
       modelUrl, // HIER MOCK MODELS FÜR PERFORMANCE
       2000,
       0,
-      () => {
+      async () => {
+        
+        await this.delay(1000)
+
         this.startAnimateObjectThroughTrack(track, currentIndex + 1)
       }
     )

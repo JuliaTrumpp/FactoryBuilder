@@ -502,7 +502,7 @@ export class PlacedEntities {
                 // Maschine gefunden ? Pushen
                 if (prevMachine) {
                     prevErz = Object.values(prevMachine.machine.inputMaterial)
-                    if(prevErz.some(string => string.includes("holz"))){
+                    if(prevErz.some((string: string | string[]) => string.includes("holz"))){
                         this.isWood = true
                         prevErz = prevErz[0]
                     } else if (prevErz.length > 1){

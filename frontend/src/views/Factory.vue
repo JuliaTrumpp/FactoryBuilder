@@ -2,7 +2,7 @@
 import type {Ref} from 'vue'
 import {onBeforeUnmount, onMounted, onUnmounted, provide, ref, watch} from 'vue'
 import type {IVector3} from '@/types/global'
-import type {IBackendEntity, IBackendEntityPreview} from '@/types/backendTypes'
+import type {IBackendEntity, IBackendEntityPreview, IPlacedRequestAnswer} from '@/types/backendTypes'
 import * as THREE from 'three'
 import { CameraControlsManager } from '@/classes/cameraControls/CameraControlsManager'
 import { PlacedEntities } from '@/classes/placedEntities/placedEntities'
