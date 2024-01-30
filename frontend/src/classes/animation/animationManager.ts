@@ -39,7 +39,7 @@ export class AnimationManager {
 
     this.startAnimateObjectThroughCombinedPipe(
       track[currentIndex].pipe,
-      this.mockModelUrl, // HIER MOCK MODELS FÜR PERFORMANCE
+      modelUrl, // HIER MOCK MODELS FÜR PERFORMANCE
       250,
       0,
       () => {
