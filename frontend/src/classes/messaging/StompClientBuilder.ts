@@ -18,7 +18,7 @@ class StompClientBuilder {
     this.client = new Client({
       brokerURL: 'ws://localhost:8080/stompbroker',
       connectHeaders: {
-        login: 'your-username', //need security-config in backend first
+        login: 'your-username', 
         passcode: 'your-password'
       },
       debug: (str: string) => {
