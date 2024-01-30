@@ -11,6 +11,7 @@ export const entityDeleteRequest = async (entity?: IEntityDelete): Promise<boole
             body: requestBody,
         });
         const json = await response.json();
+        console.log("Logged JSON Test Stomp: ",json)
         return json
     } catch (error) {
         console.error("Error deleting entity:", error)

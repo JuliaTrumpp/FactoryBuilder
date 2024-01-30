@@ -17,6 +17,7 @@ import {
 import { getCenterPoint, rotateModelFromXtoY } from '@/utils/rotation/rotate'
 import { drawLine } from '@/utils/threeJS/helpFunctions'
 import * as THREE from 'three'
+import type { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 /**
  * Represents the collection of all current entities in the factory
@@ -24,9 +25,11 @@ import * as THREE from 'three'
 export class PlacedEntities {
   private allEntities: IEntity[] = []
   private sceneRef: THREE.Scene
+  private loader: GLTFLoader
 
-  constructor(sceneRef: THREE.Scene) {
+  constructor(sceneRef: THREE.Scene, loader: GLTFLoader) {
     this.sceneRef = sceneRef
+    this.loader = loader
   }
 
   /**
@@ -47,12 +50,68 @@ export class PlacedEntities {
 
   public pop = () => {
     return this.allEntities.pop()
+
   }
 
   public getByUUID = (uuid: string): IEntity => {
     const entity = this.allEntities.find((e) => e.uuid === uuid)
-    if (!entity) throw new Error('Entity not found')
+    if (!entity) throw new Error('Entity not found (by uuid)')
     return entity
+  }
+  public getByID = (id: number): IEntity => {
+    console.log(`Searching for entity with id: ${id}, type of id: ${typeof id}`);
+    const entity = this.allEntities.find((e) => e.id == id)
+    if (!entity) throw new Error('Entity not found (by id)')
+    return entity
+  }
+
+  public updateByID = async (id: number, situation?: string, gltf?: string) => {
+    let entity, entityNew, position;
+    switch(situation) {
+      case "DELETE":
+        entity = this.getByID(id)
+        this.sceneRef.remove(entity.threejsObject)
+        this.deleteByUUID(entity.uuid)
+        break
+      case "MOVE":
+        entity = this.getByID(id)
+        entityNew = await getEntityInFactory(entity.id)
+        position = {
+          x: entityNew.x,
+          y: entityNew.y,
+          z: entityNew.z
+        }
+        replaceEntity(position, entity.threejsObject)
+        break
+      case "ROTATE":
+        entity = this.getByID(id)
+        entityNew = await getEntityInFactory(entity.id)
+        rotateModelFromXtoY(entity.orientation, entityNew.orientation, entity.threejsObject, this, false)
+        break;
+      case "ADDNEW":
+         entityNew = await getEntityInFactory(id)
+         position = {
+          x: entityNew.x,
+          y: entityNew.y,
+          z: entityNew.z
+        }
+        placeEntity(
+          this.loader,
+          this.sceneRef,
+          position,
+          backendUrl + gltf
+      ).then((threejsObject) => {
+
+          this.add({
+            id: id,
+            orientation: 'North',
+            modelId: gltf?.split(".")[0].split("/")[2] || "",
+            uuid: threejsObject.uuid,
+            threejsObject: threejsObject
+          })
+      })
+        break;
+    }
   }
 
   public rotateEntityByUUID = (uuid: string, dir: 'left' | 'right') => {
@@ -396,7 +455,7 @@ export class PlacedEntities {
         } else {
           // Vieleich die warenausgabe
           this.getRohstoffannahmeStartPoints().forEach((warenausgabePoint) => {
-            
+
             // Frag nicht...
             const newErz = prevErz === "holzplanke_planiert" ? "paket_tisch" : "paket_hammer"
             if (

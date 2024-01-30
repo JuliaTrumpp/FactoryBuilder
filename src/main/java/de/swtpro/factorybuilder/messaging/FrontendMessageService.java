@@ -20,8 +20,6 @@ public class FrontendMessageService {
         LOGGER.info(
                 String.format("Nachricht verschickt: %s %s[id=%d]", e.getOperationType(), e.getEventType(),
                         e.getEventID()));
-
     }
-
-
+    
 }

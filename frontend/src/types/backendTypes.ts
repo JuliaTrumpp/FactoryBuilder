@@ -39,6 +39,7 @@ export interface IPlaceRequest {
     z: number;
     modelId: string;
     factoryID: number;
+    user: string;
 }
 
 /**
@@ -106,6 +107,14 @@ export interface IUserForm{
 export interface ILoginForm{
     username: string;
     password: string;
+}
+
+export interface IBackendMessageEvent{
+    eventType: string; 
+    eventID: number; 
+    operationType: string; 
+    gltf?: string; 
+    user?: string;
 }
 
 export interface ISystemProperty{

@@ -2,12 +2,18 @@ package de.swtpro.factorybuilder.controller;
 
 import de.swtpro.factorybuilder.DTO.entity.MoveRequestDTO;
 import de.swtpro.factorybuilder.DTO.entity.PlaceRequestDTO;
+import de.swtpro.factorybuilder.DTO.entity.PlacedModelDTO;
 import de.swtpro.factorybuilder.DTO.entity.PropertyDTO;
 import de.swtpro.factorybuilder.DTO.entity.RotateRequestDTO;
 import de.swtpro.factorybuilder.DTO.entity.saveScriptDTO;
 import de.swtpro.factorybuilder.DTO.factory.DeleteRequestDTO;
 import de.swtpro.factorybuilder.entity.Model;
 import de.swtpro.factorybuilder.entity.model.AbstractModel;
+import de.swtpro.factorybuilder.messaging.FrontendMessageEvent;
+import de.swtpro.factorybuilder.messaging.FrontendMessageEvent.MessageEventType;
+import de.swtpro.factorybuilder.messaging.FrontendMessageEvent.MessageOperationType;
+import de.swtpro.factorybuilder.messaging.FrontendMessageService;
+
 
 import de.swtpro.factorybuilder.service.ModelService;
 import de.swtpro.factorybuilder.service.model.AbstractModelService;
@@ -21,6 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -32,12 +39,15 @@ public class EntityRestAPIController {
     ModelService modelService;
     AbstractModelService abstractModelService;
     ManipulateAbstractModelService manipulateAbstractModelService;
+    FrontendMessageService frontendMessageService;
+
 
     EntityRestAPIController(ModelService modelService, AbstractModelService abstractModelService,
-                            ManipulateAbstractModelService manipulateAbstractModelService) {
+                            ManipulateAbstractModelService manipulateAbstractModelService, FrontendMessageService frontendMessageService) {
         this.modelService = modelService;
         this.abstractModelService = abstractModelService;
         this.manipulateAbstractModelService = manipulateAbstractModelService;
+        this.frontendMessageService = frontendMessageService;
     }
 
     @CrossOrigin
@@ -46,7 +56,8 @@ public class EntityRestAPIController {
 
         Position pos = new Position(placeRequestDTO.x(), placeRequestDTO.y(), placeRequestDTO.z());
         Model model = modelService.getByName(placeRequestDTO.modelId()).orElseThrow();
-       AbstractModel abstractModel = abstractModelService.createPlacedModel(model,pos,placeRequestDTO.factoryID());
+        String username = placeRequestDTO.user();
+        AbstractModel abstractModel = abstractModelService.createPlacedModel(model, pos, placeRequestDTO.factoryID());
 
 
        if (abstractModel == null) {
@@ -56,7 +67,7 @@ public class EntityRestAPIController {
        }
 
        LOGGER.info("placed Model with placedModelID: " + abstractModel.getId() + " and modelID: " + model.getId() + " ('" + abstractModel.getName() + "')");
-
+       frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, abstractModel.getId(), MessageOperationType.ADDNEW, abstractModel.getModelGltf(), username), abstractModel.getFactory().getFactoryID());
        // Entity wir in Datenbank erzeugt, und id wird gesendet
        return ResponseEntity.ok(abstractModel.getId());
     }
@@ -65,6 +76,7 @@ public class EntityRestAPIController {
     @PostMapping("/delete")
     public ResponseEntity<Boolean> delete(@RequestBody DeleteRequestDTO deleteRequestDTO) {
         boolean deleted = manipulateAbstractModelService.removeModelFromFactory(deleteRequestDTO.id());
+        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, deleteRequestDTO.id(), MessageOperationType.DELETE), deleteRequestDTO.factoryId());
         return ResponseEntity.ok(deleted);
     }
 
@@ -75,6 +87,7 @@ public class EntityRestAPIController {
 
         LOGGER.info("rotate entity: " + String.valueOf(rotateRequestDTO.id()) + " is " + String.valueOf(rotated));
 
+        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, rotateRequestDTO.id(), MessageOperationType.ROTATE), rotateRequestDTO.factoryID());
         return ResponseEntity.ok(rotated);
     }
 
@@ -84,6 +97,7 @@ public class EntityRestAPIController {
         Position pos = new Position(moveRequestDTO.x(), moveRequestDTO.y(), moveRequestDTO.z());
         boolean moved = manipulateAbstractModelService.moveModel(moveRequestDTO.id(), pos);
         LOGGER.info("Moved: " + moved);
+        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, moveRequestDTO.id(), MessageOperationType.MOVE), moveRequestDTO.factoryId());
         return ResponseEntity.ok(moved);
     }
 
@@ -171,6 +185,33 @@ public class EntityRestAPIController {
 
         LOGGER.info("BE Funktion getUserProperties wurde aufgerufen LULE");
         return ResponseEntity.ok(null);
+    }
+
+    @CrossOrigin
+    @GetMapping("/get/{entityId}")
+    public PlacedModelDTO getPlacedEntity(@PathVariable long entityId) {
+        try {
+            AbstractModel abstractModel = abstractModelService.getPlacedModelById(entityId).orElseThrow();
+            Model m = modelService.getByID(abstractModel.getId()).orElse(null);
+
+            PlacedModelDTO dto = new PlacedModelDTO(
+                    abstractModel.getFactory().getFactoryID(),
+                    abstractModel.getId(),
+                    abstractModel.getOrientation(),
+                    abstractModel.getRootPos().getX(),
+                    abstractModel.getRootPos().getY(),
+                    abstractModel.getRootPos().getZ(),
+                    m.getModelFile(),
+                    m.getName()
+                    // Skript muss nicht mitgeladen werden, da es immer direkt aus der DB geladen wird, sobald man die SkriptingView oeffnet
+            );
+
+            return dto;
+        } catch (Exception e) {
+            LOGGER.info("Fehler beim Laden des Entitys aus dem BE, um dieses im FE zu aktualisieren");
+        }
+
+        return null;
     }
 
 }

@@ -64,7 +64,7 @@ export const highlightObjectWithColor = (
 export const replaceEntity = (
   pos: IVector3,
   currentObjectSelected: THREE.Object3D,
-  lastObjectSelected: THREE.Object3D
+  lastObjectSelected?: THREE.Object3D
 ) => {
   currentObjectSelected.position.set(pos.x, pos.y, pos.z)
   lastObjectSelected = currentObjectSelected

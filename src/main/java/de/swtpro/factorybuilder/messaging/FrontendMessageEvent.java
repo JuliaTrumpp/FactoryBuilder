@@ -5,7 +5,7 @@ public class FrontendMessageEvent {
         FACTORY, ENTITY
     }
     public enum MessageOperationType {
-        UPDATE, DELETE
+        ROTATE, MOVE, DELETE, ADDNEW
     }
     private MessageEventType eventType;
 
@@ -13,10 +13,21 @@ public class FrontendMessageEvent {
 
     private MessageOperationType operationType;
 
+    private String gltf; 
+    private String user;
+
     public FrontendMessageEvent(MessageEventType eventType, long eventID, MessageOperationType operationType) {
         this.eventType = eventType;
         this.eventID = eventID;
         this.operationType = operationType;
+    }
+
+    public FrontendMessageEvent(MessageEventType eventType, long eventID, MessageOperationType operationType, String gltf, String user) {
+        this.eventType = eventType;
+        this.eventID = eventID;
+        this.operationType = operationType;
+        this.gltf = gltf; 
+        this.user = user;
     }
     
     public MessageEventType getEventType() {
@@ -42,5 +53,18 @@ public class FrontendMessageEvent {
         this.operationType = operationType;
     }
 
+    public String getGltf() {
+        return gltf;
+    }
+
+    public void setGltf(String gltf) {
+        this.gltf = gltf;
+    }
+    public String getUser() {
+        return user;
+    }
+    public void setUser(String user) {
+        this.user = user;
+    }
 
 }
