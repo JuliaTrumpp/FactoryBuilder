@@ -14,9 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 @Service
 public class ElectronicsMachineService implements PlacedModelServiceTemplate {
@@ -40,6 +38,13 @@ public class ElectronicsMachineService implements PlacedModelServiceTemplate {
             if (manipulateAbstractModelService.checkForPlacement(electronicsMachine)) {
                 for (Field f : electronicsMachine.getPlacedFields())
                     fieldService.setPlacedModelOnField(electronicsMachine, f);
+
+                Map<String, String> inputMaterials = new HashMap<>();
+                Map<String, String> outputMaterials = new HashMap<>();
+                inputMaterials.put("Kupfer", "/models/items/resources/kupfer.gltf");
+                outputMaterials.put("Kupfer_staub", "/models/items/processed/kupfer_staub.gltf");
+                electronicsMachine.setInputMaterial(inputMaterials);
+                electronicsMachine.setOutputMaterial(outputMaterials);
 
                 setIconAndModelGltfAndTypeAndName(electronicsMachine);
 

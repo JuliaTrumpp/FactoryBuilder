@@ -15,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class SawmillService implements PlacedModelServiceTemplate {
@@ -41,6 +43,13 @@ public class SawmillService implements PlacedModelServiceTemplate {
             if (manipulateAbstractModelService.checkForPlacement(sawMill)) {
                 for (Field f : sawMill.getPlacedFields())
                     fieldService.setPlacedModelOnField(sawMill, f);
+
+                Map<String, String> inputMaterials = new HashMap<>();
+                Map<String, String> outputMaterials = new HashMap<>();
+                inputMaterials.put("holzstaemme", "/models/items/resources/holzstaemme.gltf");
+                outputMaterials.put("holzplanke", "/models/items/processed/holzplanke.gltf");
+                sawMill.setInputMaterial(inputMaterials);
+                sawMill.setOutputMaterial(outputMaterials);
 
                 setIconAndModelGltfAndTypeAndName(sawMill);
 

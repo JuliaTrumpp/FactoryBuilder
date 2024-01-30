@@ -240,7 +240,9 @@ public class FactoryRestAPIController {
                    abstractModel.getRootPos().getY(),
                    abstractModel.getRootPos().getZ(),
                    abstractModel.getModelGltf(), // Füge den Pfad hinzu, wie erforderlich
-                   abstractModel.getName()
+                   abstractModel.getName(),
+                   abstractModel.getInputMaterial(),
+                   abstractModel.getOutputMaterial()
            );
            dtos.add(dto);
        }

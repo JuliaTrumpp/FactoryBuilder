@@ -1,14 +1,21 @@
-import type { ICompass } from "@/classes/placedEntities/placedEntities";
+import type {ICompass} from "@/classes/placedEntities/placedEntities";
 
 export interface IBackendEntity {
     x: number;
     y: number;
     z: number;
-    path: string; 
+    path: string;
     orientation: ICompass;
     factoryid: string;
-    id:number;
+    id: number;
     modelId: string;
+    inputMaterial: Map<string, string>;
+    outputMaterial: Map<string, string>;
+}
+export interface IPlacedRequestAnswer {
+    id: number;
+    inputMaterial: Map<string, string>;
+    outputMaterial: Map<string, string>;
 }
 
 export interface IBackendEntityPreview {
@@ -17,6 +24,7 @@ export interface IBackendEntityPreview {
     icon: string;
     id: string;
 }
+
 export interface IFactoryCreate {
     name: string;
     password: string;
@@ -25,6 +33,7 @@ export interface IFactoryCreate {
     height: number;
     author: string
 }
+
 export interface IFactoryDelete {
     id: number,
     element: any
@@ -88,7 +97,7 @@ export interface IEntityMove {
 export interface IModelScripting {
     id: number;
 }
- 
+
 export interface IFactory {
     id: number;
     name: string;
@@ -98,31 +107,32 @@ export interface IFactory {
     hasPassword: boolean;
     author: string;
 }
-export interface IUserForm{
+
+export interface IUserForm {
     username: string;
     password: string;
     passwordCheck: string;
 }
 
-export interface ILoginForm{
+export interface ILoginForm {
     username: string;
     password: string;
 }
 
-export interface IBackendMessageEvent{
-    eventType: string; 
-    eventID: number; 
-    operationType: string; 
-    gltf?: string; 
+export interface IBackendMessageEvent {
+    eventType: string;
+    eventID: number;
+    operationType: string;
+    gltf?: string;
     user?: string;
 }
 
-export interface ISystemProperty{
+export interface ISystemProperty {
     property: string;
     value: string;
 }
 
-export interface IUserProperty{
+export interface IUserProperty {
     property: string;
     value: string;
 }

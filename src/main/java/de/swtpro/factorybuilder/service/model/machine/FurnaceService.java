@@ -14,9 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 @Service
 public class FurnaceService implements PlacedModelServiceTemplate {
@@ -41,6 +39,13 @@ public class FurnaceService implements PlacedModelServiceTemplate {
             if (manipulateAbstractModelService.checkForPlacement(furnace)) {
                 for (Field f : furnace.getPlacedFields())
                     fieldService.setPlacedModelOnField(furnace, f);
+
+                Map<String, String> inputMaterials = new HashMap<>();
+                Map<String, String> outputMaterials = new HashMap<>();
+                inputMaterials.put("eisen_klumpen", "/models/items/resources/eisen_klumpen.gltf");
+                outputMaterials.put("eisen", "/models/items/processed/eisen.gltf");
+                furnace.setInputMaterial(inputMaterials);
+                furnace.setOutputMaterial(outputMaterials);
 
                 setIconAndModelGltfAndTypeAndName(furnace);
 

@@ -15,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class MiddleAssemblyMachineService implements PlacedModelServiceTemplate {
@@ -40,6 +42,15 @@ public class MiddleAssemblyMachineService implements PlacedModelServiceTemplate 
             if (manipulateAbstractModelService.checkForPlacement(middleAssemblyMachine)) {
                 for (Field f : middleAssemblyMachine.getPlacedFields())
                     fieldService.setPlacedModelOnField(middleAssemblyMachine, f);
+
+                Map<String, String> inputMaterials = new HashMap<>();
+                Map<String, String> outputMaterials = new HashMap<>();
+                inputMaterials.put("Holzplanke_planiert", "/models/items/resources/holzplanke_planiert.gltf");
+                outputMaterials.put("Paket_tisch", "/models/items/processed/paket_tisch.gltf");
+                inputMaterials.put("Eisen_barren", "/models/items/resources/eisen_barren.gltf");
+                outputMaterials.put("Paket_hammer", "/models/items/processed/paket_hammer.gltf");
+                middleAssemblyMachine.setInputMaterial(inputMaterials);
+                middleAssemblyMachine.setOutputMaterial(outputMaterials);
 
                 setIconAndModelGltfAndTypeAndName(middleAssemblyMachine);
 

@@ -35,7 +35,7 @@ export class AnimationManager {
     // Beende
     if (currentIndex === track.length) return
 
-    let modelUrl = backendUrl + itemMap.get(track[currentIndex].modelId)
+    let modelUrl = backendUrl + itemMap.get(track[currentIndex])
 
     this.startAnimateObjectThroughCombinedPipe(
       track[currentIndex].pipe,

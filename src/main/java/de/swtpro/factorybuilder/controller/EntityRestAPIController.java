@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 @RestController
@@ -49,10 +50,10 @@ public class EntityRestAPIController {
         this.manipulateAbstractModelService = manipulateAbstractModelService;
         this.frontendMessageService = frontendMessageService;
     }
-
+    public record PlaceRequestAnswerDTO(long id, Map<String, String> inputMaterial, Map<String, String> outputMaterial){}
     @CrossOrigin
     @PostMapping("/place")
-    public ResponseEntity<Long> place(@RequestBody PlaceRequestDTO placeRequestDTO) {
+    public ResponseEntity<PlaceRequestAnswerDTO> place(@RequestBody PlaceRequestDTO placeRequestDTO) {
 
         Position pos = new Position(placeRequestDTO.x(), placeRequestDTO.y(), placeRequestDTO.z());
         Model model = modelService.getByName(placeRequestDTO.modelId()).orElseThrow();
@@ -69,7 +70,7 @@ public class EntityRestAPIController {
        LOGGER.info("placed Model with placedModelID: " + abstractModel.getId() + " and modelID: " + model.getId() + " ('" + abstractModel.getName() + "')");
        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, abstractModel.getId(), MessageOperationType.ADDNEW, abstractModel.getModelGltf(), username), abstractModel.getFactory().getFactoryID());
        // Entity wir in Datenbank erzeugt, und id wird gesendet
-       return ResponseEntity.ok(abstractModel.getId());
+       return ResponseEntity.ok(new PlaceRequestAnswerDTO(abstractModel.getId(), abstractModel.getInputMaterial(), abstractModel.getOutputMaterial()));
     }
 
     @CrossOrigin
@@ -194,7 +195,9 @@ public class EntityRestAPIController {
             AbstractModel abstractModel = abstractModelService.getPlacedModelById(entityId).orElseThrow();
             Model m = modelService.getByID(abstractModel.getId()).orElse(null);
 
-            PlacedModelDTO dto = new PlacedModelDTO(
+            assert m != null;
+
+            return new PlacedModelDTO(
                     abstractModel.getFactory().getFactoryID(),
                     abstractModel.getId(),
                     abstractModel.getOrientation(),
@@ -202,11 +205,11 @@ public class EntityRestAPIController {
                     abstractModel.getRootPos().getY(),
                     abstractModel.getRootPos().getZ(),
                     m.getModelFile(),
-                    m.getName()
+                    m.getName(),
+                    abstractModel.getInputMaterial(),
+                    abstractModel.getOutputMaterial()
                     // Skript muss nicht mitgeladen werden, da es immer direkt aus der DB geladen wird, sobald man die SkriptingView oeffnet
             );
-
-            return dto;
         } catch (Exception e) {
             LOGGER.info("Fehler beim Laden des Entitys aus dem BE, um dieses im FE zu aktualisieren");
         }

@@ -14,9 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 @Service
 public class GrindingMachineService implements PlacedModelServiceTemplate {
@@ -41,6 +39,13 @@ public class GrindingMachineService implements PlacedModelServiceTemplate {
             if (manipulateAbstractModelService.checkForPlacement(grindingMachine)) {
                 for (Field f : grindingMachine.getPlacedFields())
                     fieldService.setPlacedModelOnField(grindingMachine, f);
+
+                Map<String, String> inputMaterials = new HashMap<>();
+                Map<String, String> outputMaterials = new HashMap<>();
+                inputMaterials.put("Eisen_klumpen", "/models/items/resources/eisen_klumpen.gltf");
+                outputMaterials.put("Eisen_barren", "/models/items/processed/eisen_barren.gltf");
+                grindingMachine.setInputMaterial(inputMaterials);
+                grindingMachine.setOutputMaterial(outputMaterials);
 
                 setIconAndModelGltfAndTypeAndName(grindingMachine);
 

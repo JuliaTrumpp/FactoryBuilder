@@ -15,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class OreCleanerService implements PlacedModelServiceTemplate {
@@ -39,6 +41,13 @@ public class OreCleanerService implements PlacedModelServiceTemplate {
             if (manipulateAbstractModelService.checkForPlacement(oreCleaner)) {
                 for (Field f : oreCleaner.getPlacedFields())
                     fieldService.setPlacedModelOnField(oreCleaner, f);
+
+                Map<String, String> inputMaterials = new HashMap<>();
+                Map<String, String> outputMaterials = new HashMap<>();
+                inputMaterials.put("Eisen", "/models/items/resources/eisen.gltf");
+                outputMaterials.put("Eisen_klumpen", "/models/items/processed/eisen_klumpen.gltf");
+                oreCleaner.setInputMaterial(inputMaterials);
+                oreCleaner.setOutputMaterial(outputMaterials);
 
                 setIconAndModelGltfAndTypeAndName(oreCleaner);
 

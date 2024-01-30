@@ -15,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class KilnService implements PlacedModelServiceTemplate {
@@ -39,6 +41,13 @@ public class KilnService implements PlacedModelServiceTemplate {
             if (manipulateAbstractModelService.checkForPlacement(kiln)) {
                 for (Field f : kiln.getPlacedFields())
                     fieldService.setPlacedModelOnField(kiln, f);
+
+                Map<String, String> inputMaterials = new HashMap<>();
+                Map<String, String> outputMaterials = new HashMap<>();
+                inputMaterials.put("Sand", "/models/items/resources/sand.gltf");
+                outputMaterials.put("Glas", "/models/items/processed/glas.gltf");
+                kiln.setInputMaterial(inputMaterials);
+                kiln.setOutputMaterial(outputMaterials);
 
                 setIconAndModelGltfAndTypeAndName(kiln);
 

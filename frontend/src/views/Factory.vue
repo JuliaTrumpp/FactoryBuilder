@@ -2,7 +2,7 @@
 import type {Ref} from 'vue'
 import {onBeforeUnmount, onMounted, onUnmounted, provide, ref, watch} from 'vue'
 import type {IVector3} from '@/types/global'
-import type {IBackendEntity, IBackendEntityPreview, IEntityDelete} from '@/types/backendTypes'
+import type {IBackendEntity, IBackendEntityPreview, IPlacedRequestAnswer} from '@/types/backendTypes'
 import * as THREE from 'three'
 import { CameraControlsManager } from '@/classes/cameraControls/CameraControlsManager'
 import { PlacedEntities } from '@/classes/placedEntities/placedEntities'
@@ -461,9 +461,9 @@ const handleClick = (event: any) => {
             .then((response) => {
               console.log(response)
               return response.json()})
-            .then((id) => {
-              if (id === -1) return
-              placedEntities.value!!.updateLastId(id)
+            .then((placeRequestAnswer: IPlacedRequestAnswer) => {
+              if (placeRequestAnswer.id === -1) return
+              placedEntities.value!!.updateLastIdAndInputMaterialAndOutputMaterial(placeRequestAnswer.id, placeRequestAnswer.inputMaterial, placeRequestAnswer.outputMaterial)
 
             })
             .catch((error) => {
@@ -614,7 +614,9 @@ onMounted(() => {
           orientation: backendEntity.orientation,
           modelId: backendEntity.modelId,
           threejsObject: threejsObject,
-          uuid: threejsObject.uuid
+          uuid: threejsObject.uuid,
+          inputMaterial: backendEntity.inputMaterial,
+          outputMaterial: backendEntity.outputMaterial
         })
       })
     })

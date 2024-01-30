@@ -6,6 +6,8 @@ export type IEntity = {
   uuid: string // UUID vom threejs object
   orientation: ICompass
   threejsObject: THREE.Object3D
+  inputMaterial?: Map<string, string>
+  outputMaterial?: Map<string, string>
 }
 
 export type IPipeInfo = {
@@ -23,8 +25,8 @@ export type ICombinedPipe = {
 
 export type IMaschineInfo = {
   modelId: string
-  inputMaterial: IItem[]
-  outputMaterial: IItem[]
+  inputMaterial: Map<string, string>
+  outputMaterial: Map<string, string>
   entrances: THREE.Vector3[]
   exits: THREE.Vector3[]
 }
@@ -70,5 +72,5 @@ export type IItemTrack = ISingleItemTrack[]
 
 export type ISingleItemTrack = {
   pipe: ICombinedPipe
-  modelId: IItem
+  modelId: string
 }
