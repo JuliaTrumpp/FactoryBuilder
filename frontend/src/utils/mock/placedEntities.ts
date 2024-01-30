@@ -4,94 +4,94 @@ export const materialMap = new Map<string, { inputMaterial: IItem[]; outputMater
   [
     'Brennerofen',
     {
-      inputMaterial: ['sand'],
-      outputMaterial: ['glas']
+      inputMaterial: ['Eisen_staub'],
+      outputMaterial: ['Eisen_barren']
     }
   ],
   [
     'Elektronikmaschine',
     {
-      inputMaterial: ['kupfer'],
-      outputMaterial: ['kupfer_staub']
+      inputMaterial: ['Kupfer'],
+      outputMaterial: ['Kupfer_staub']
     }
   ],
   [
     'Erzreiniger',
     {
-      inputMaterial: ['eisen'],
-      outputMaterial: ['eisen_klumpen']
+      inputMaterial: ['Eisen'],
+      outputMaterial: ['Eisen_klumpen']
     }
   ],
   [
     'Farbsprueher',
     {
-      inputMaterial: ['farbeimer'],
-      outputMaterial: ['farbeimer_processed']
+      inputMaterial: ['Farbeimer'],
+      outputMaterial: ['Farbeimer_processed']
     }
   ],
   [
-    'Montagemaschine_Mittel',
+    'Montagemaschine',
     {
-      inputMaterial: ['holzplanke_planiert', 'eisen_barren'],
-      outputMaterial: ['paket_tisch', 'paket_hammer']
+      inputMaterial: ['Holzplanke_planiert', 'Eisen_barren'],
+      outputMaterial: ['Paket_tisch', 'Paket_hammer']
     }
   ],
   [
     'Planiermaschine',
     {
-      inputMaterial: ['holzplanke'],
-      outputMaterial: ['holzplanke_planiert']
+      inputMaterial: ['Holzplanke'],
+      outputMaterial: ['Holzplanke_planiert']
     }
   ],
   [
     'Saegemuehle',
     {
-      inputMaterial: ['holzstaemme'],
-      outputMaterial: ['holzplanke']
+      inputMaterial: ['Holzstaemme'],
+      outputMaterial: ['Holzplanke']
     }
   ],
   [
     'Schleifmaschine',
     {
-      inputMaterial: ['eisen_klumpen'],
-      outputMaterial: ['eisen_barren']
+      inputMaterial: ['Eisen_klumpen'],
+      outputMaterial: ['Eisen_barren']
     }
   ],
   [
     'Schmelzofen',
     {
-      inputMaterial: ['eisen_klumpen'],
-      outputMaterial: ['eisen']
+      inputMaterial: ['Eisen_klumpen'],
+      outputMaterial: ['Eisen']
     }
   ]
 ])
 
 export const itemMap = new Map([
   // Resources
-  ['eisen', '/models/items/resources/eisen.gltf'],
-  ['farbeimer', '/models/items/resources/farbeimer.gltf'],
-  ['holzstaemme', '/models/items/resources/holzstaemme.gltf'],
-  ['kautschuk', '/models/items/resources/kautschuk.gltf'],
-  ['kohle', '/models/items/resources/kohle.gltf'],
-  ['kupfer', '/models/items/resources/kupfer.gltf'],
-  ['sand', '/models/items/resources/sand.gltf'],
-  ['zinn', '/models/items/resources/zinn.gltf'],
+  ['Eisen', '/models/items/resources/eisen.gltf'],
+  ['Farbeimer', '/models/items/resources/farbeimer.gltf'],
+  ['Holzstaemme', '/models/items/resources/holzstaemme.gltf'],
+  ['Kautschuk', '/models/items/resources/kautschuk.gltf'],
+  ['Kohle', '/models/items/resources/kohle.gltf'],
+  ['Kupfer', '/models/items/resources/kupfer.gltf'],
+  ['Sand', '/models/items/resources/sand.gltf'],
+  ['Zinn', '/models/items/resources/zinn.gltf'],
 
   // Processed Items
-  ['eisen_barren', '/models/items/processed/eisen_barren.gltf'],
-  ['eisen_klumpen', '/models/items/processed/eisen_klumpen.gltf'],
-  ['eisen_staub', '/models/items/processed/eisen_staub.gltf'],
-  ['farbeimer_processed', '/models/items/processed/farbeimer_processed.gltf'],
-  ['glas', '/models/items/processed/glas.gltf'],
-  ['holzplanke', '/models/items/processed/holzplanke.gltf'],
-  ['holzplanke_planiert', '/models/items/processed/holzplanke_planiert.gltf'],
-  ['holzstaebe', '/models/items/processed/holzstaebe.gltf'],
-  ['kupfer_staub', '/models/items/processed/kupfer_staub.gltf'],
-  ['zinn_staub', '/models/items/processed/zinn_staub.gltf'],
+  ['Eisen_barren', '/models/items/processed/eisen_barren.gltf'],
+  ['Eisen_klumpen', '/models/items/processed/eisen_klumpen.gltf'],
+  ['Eisen_staub', '/models/items/processed/eisen_staub.gltf'],
+  ['Farbeimer_processed', '/models/items/processed/farbeimer_processed.gltf'],
+  ['Glas', '/models/items/processed/glas.gltf'],
+  ['Holzplanke', '/models/items/processed/holzplanke.gltf'],
+  ['Holzplanke_planiert', '/models/items/processed/holzplanke_planiert.gltf'],
+  ['Holzstaebe', '/models/items/processed/holzstaebe.gltf'],
+  ['Kupfer_staub', '/models/items/processed/kupfer_staub.gltf'],
+  ['Zinn_staub', '/models/items/processed/zinn_staub.gltf'],
 
   // Items
-  ['paket_hammer', '/models/items/products/paket_hammer.gltf'],
-  ['paket_tisch', '/models/items/products/paket_tisch.gltf']
+  ['Paket_hammer', '/models/items/products/paket_hammer.gltf'],
+  ['Paket_tisch', '/models/items/products/paket_tisch.gltf']
 ])
 
 export const maschineIds = [
@@ -99,7 +99,7 @@ export const maschineIds = [
   'Elektronikmaschine',
   'Erzreiniger',
   'Farbsprueher',
-  'Montagemaschine_Mittel',
+  'Montagemaschine',
   'Planiermaschine',
   'Saegemuehle',
   'Schleifmaschine',

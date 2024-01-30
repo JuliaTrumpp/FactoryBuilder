@@ -1,26 +1,27 @@
 import type {
-    IEntity,
-    ICombinedPipe,
-    IPipeInfo,
-    IMaschineInfo,
-    IItemTrack,
-    IItem
+  IEntity,
+  ICombinedPipe,
+  IPipeInfo,
+  IMaschineInfo,
+  IItemTrack,
+  IItem
 } from '@/types/placedEntites'
-import {maschineIds, materialMap} from '@/utils/mock/placedEntities'
+import { maschineIds, materialMap } from '@/utils/mock/placedEntities'
 import {
-    turnLeft,
-    turnRight,
-    reverseCombinedPipe,
-    pointsOverlapping,
-    weldPointsOfCombinedPipes
+  turnLeft,
+  turnRight,
+  reverseCombinedPipe,
+  pointsOverlapping,
+  weldPointsOfCombinedPipes,
+  reverseSinglePipe
 } from '@/utils/placedEntities/placedEntities'
-import {getCenterPoint, rotateModelFromXtoY} from '@/utils/rotation/rotate'
-import {drawLine} from '@/utils/threeJS/helpFunctions'
+import { getCenterPoint, rotateModelFromXtoY } from '@/utils/rotation/rotate'
+import { drawLine, drawPoint } from '@/utils/threeJS/helpFunctions'
 import * as THREE from 'three'
-import type {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js'
-import {getEntityInFactory} from "@/utils/backend-communication/getRequests";
-import {placeEntity, replaceEntity} from "@/utils/threeJS/entityManipulation";
-import {backendUrl} from "@/utils/config/config";
+import type { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { getEntityInFactory } from '@/utils/backend-communication/getRequests'
+import { placeEntity, replaceEntity } from '@/utils/threeJS/entityManipulation'
+import { backendUrl } from '@/utils/config/config'
 
 /**
  * Represents the collection of all current entities in the factory
@@ -54,87 +55,89 @@ export class PlacedEntities {
         console.log(this.allEntities)
     }
 
-    public pop = () => {
-        return this.allEntities.pop()
+  public pop = () => {
+    return this.allEntities.pop()
+  }
 
-    }
+  public getByUUID = (uuid: string): IEntity => {
+    const entity = this.allEntities.find((e) => e.uuid === uuid)
+    if (!entity) throw new Error('Entity not found (by uuid)')
+    return entity
+  }
 
-    public getByUUID = (uuid: string): IEntity => {
-        const entity = this.allEntities.find((e) => e.uuid === uuid)
-        if (!entity) throw new Error('Entity not found (by uuid)')
-        return entity
-    }
-    public getByID = (id: number): IEntity => {
-        console.log(`Searching for entity with id: ${id}, type of id: ${typeof id}`);
-        const entity = this.allEntities.find((e) => e.id == id)
-        if (!entity) throw new Error('Entity not found (by id)')
-        return entity
-    }
+  public getByID = (id: number): IEntity => {
+    console.log(`Searching for entity with id: ${id}, type of id: ${typeof id}`)
+    const entity = this.allEntities.find((e) => e.id == id)
+    if (!entity) throw new Error('Entity not found (by id)')
+    return entity
+  }
 
-    public updateByID = async (id: number, situation?: string, gltf?: string) => {
-        let entity, entityNew, position;
-        switch (situation) {
-            case "DELETE":
-                entity = this.getByID(id)
-                this.sceneRef.remove(entity.threejsObject)
-                this.deleteByUUID(entity.uuid)
-                break
-            case "MOVE":
-                entity = this.getByID(id)
-                entityNew = await getEntityInFactory(entity.id)
-                position = {
-                    x: entityNew.x,
-                    y: entityNew.y,
-                    z: entityNew.z
-                }
-                replaceEntity(position, entity.threejsObject)
-                break
-            case "ROTATE":
-                entity = this.getByID(id)
-                entityNew = await getEntityInFactory(entity.id)
-                rotateModelFromXtoY(entity.orientation, entityNew.orientation, entity.threejsObject, this, false)
-                break;
-            case "ADDNEW":
-                entityNew = await getEntityInFactory(id)
-                position = {
-                    x: entityNew.x,
-                    y: entityNew.y,
-                    z: entityNew.z
-                }
-                placeEntity(
-                    this.loader,
-                    this.sceneRef,
-                    position,
-                    backendUrl + gltf
-                ).then((threejsObject) => {
-
-                    this.add({
-                        id: id,
-                        orientation: 'North',
-                        modelId: gltf?.split(".")[0].split("/")[2] || "",
-                        uuid: threejsObject.uuid,
-                        threejsObject: threejsObject
-                    })
-                })
-                break;
+  public updateByID = async (id: number, situation?: string, gltf?: string) => {
+    let entity, entityNew, position
+    switch (situation) {
+      case 'DELETE':
+        entity = this.getByID(id)
+        this.sceneRef.remove(entity.threejsObject)
+        this.deleteByUUID(entity.uuid)
+        break
+      case 'MOVE':
+        entity = this.getByID(id)
+        entityNew = await getEntityInFactory(entity.id)
+        position = {
+          x: entityNew.x,
+          y: entityNew.y,
+          z: entityNew.z
         }
-    }
-
-    public rotateEntityByUUID = (uuid: string, dir: 'left' | 'right') => {
-        let entity: IEntity = this.getByUUID(uuid)
-
-        if (dir === 'left') {
-            entity.orientation = turnLeft(entity.orientation)
-        } else {
-            entity.orientation = turnRight(entity.orientation)
+        replaceEntity(position, entity.threejsObject)
+        break
+      case 'ROTATE':
+        entity = this.getByID(id)
+        entityNew = await getEntityInFactory(entity.id)
+        rotateModelFromXtoY(
+          entity.orientation,
+          entityNew.orientation,
+          entity.threejsObject,
+          this,
+          false
+        )
+        break
+      case 'ADDNEW':
+        entityNew = await getEntityInFactory(id)
+        position = {
+          x: entityNew.x,
+          y: entityNew.y,
+          z: entityNew.z
         }
+        placeEntity(this.loader, this.sceneRef, position, backendUrl + gltf).then(
+          (threejsObject) => {
+            this.add({
+              id: id,
+              orientation: 'North',
+              modelId: gltf?.split('.')[0].split('/')[2] || '',
+              uuid: threejsObject.uuid,
+              threejsObject: threejsObject
+            })
+          }
+        )
+        break
     }
+  }
 
-    public deleteByUUID = (uuid: string): void => {
-        this.allEntities = this.allEntities.filter((entity) => entity.uuid !== uuid)
+  public rotateEntityByUUID = (uuid: string, dir: 'left' | 'right') => {
+    let entity: IEntity = this.getByUUID(uuid)
+
+    if (dir === 'left') {
+      entity.orientation = turnLeft(entity.orientation)
+    } else {
+      entity.orientation = turnRight(entity.orientation)
     }
+  }
 
-    public getAllEntities = (): IEntity[] => this.allEntities
+  public deleteByUUID = (uuid: string): void => {
+    this.allEntities = this.allEntities.filter((entity) => entity.uuid !== uuid)
+  }
+
+  public getAllEntities = (): IEntity[] => this.allEntities
 
     /**
      * Machines
@@ -298,25 +301,82 @@ export class PlacedEntities {
         // weld points
         out.forEach((combinedPipe) => weldPointsOfCombinedPipes(combinedPipe))
 
-        return out
-    }
+    return out
+  }
 
-    /**
-     * Get Pipes primitive
-     */
-    public getAllStraightSinglePipes = (): IPipeInfo[] => {
-        return this.allEntities
-            .filter((entity) => entity.modelId === 'Röhre')
-            .map((mesh) => {
-                return {
-                    startPoint: this.getPointsFromSinglePipe(mesh).startPoint.clone(),
-                    endPoint: this.getPointsFromSinglePipe(mesh).endPoint.clone(),
-                    pipeCount: 1,
-                    type: 'straight',
-                    orientation: mesh.orientation
-                }
-            })
-    }
+  public getAllStraightPipes = (): IPipeInfo[] => {
+
+    let out: IPipeInfo[] = []
+
+
+
+    this.getAllStraightSinglePipes().forEach((currentPipe) => {
+
+
+      const {startPoint, endPoint} = currentPipe;
+      let rotatedLeft = this.findSinglePipe(startPoint, true, out)
+      let rotatedRight = this.findSinglePipe(endPoint, false, out)
+      let left = this.findSinglePipe(startPoint, false, out)
+      let right = this.findSinglePipe(endPoint, true, out)
+
+      if (rotatedLeft) {
+        reverseSinglePipe(rotatedLeft)
+        left = rotatedLeft
+      }
+
+      if (rotatedRight) {
+        reverseSinglePipe(rotatedRight)
+        right = rotatedRight
+      }
+
+      // Keine Nachbarn gefunden
+      if (!left && !right) {
+        out.push(currentPipe)
+      }
+
+      // Nur auf der linken Seite gefunden
+      if (left && !right) {
+        left.endPoint = currentPipe.endPoint
+        left.pipeCount += currentPipe.pipeCount
+      }
+
+      // Nur auf der rechten Seite gefunden
+      if (!left && right) {
+        right.startPoint = currentPipe.startPoint
+        right.pipeCount += currentPipe.pipeCount
+      }
+
+      // Auf beiden Seiten gefunden, kombinieren
+      if (right && left) {
+        left.endPoint = right.startPoint
+        left.pipeCount += right.pipeCount + currentPipe.pipeCount
+        out = out.filter((pipe) => pipe !== right)
+      }
+    })
+
+    out.forEach(({startPoint, endPoint}) => {
+      drawLine(startPoint, endPoint, this.sceneRef)
+    })
+
+    return out
+  }
+
+  /**
+   * Get Pipes primitive
+   */
+  public getAllStraightSinglePipes = (): IPipeInfo[] => {
+    return this.allEntities
+      .filter((entity) => entity.modelId === 'Roehre')
+      .map((mesh) => {
+        return {
+          startPoint: this.getPointsFromSinglePipe(mesh).startPoint.clone(),
+          endPoint: this.getPointsFromSinglePipe(mesh).endPoint.clone(),
+          pipeCount: 1,
+          type: 'straight',
+          orientation: mesh.orientation
+        }
+      })
+  }
 
     public getAllCurvedSinglePipes = (): IPipeInfo[] => {
         return this.allEntities
@@ -359,87 +419,87 @@ export class PlacedEntities {
         })
     }
 
-    public findMachineByEntryPoint = (
-        point: THREE.Vector3
-    ): { machine: IMaschineInfo; entry: THREE.Vector3 } | undefined => {
-        let entryPoint = new THREE.Vector3()
-        const machine = this.getMachines().find(({entrances}) => {
-            return entrances.find((possibleEntry) => {
-                drawLine(possibleEntry, possibleEntry, this.sceneRef)
-                if (pointsOverlapping(possibleEntry, point)) {
-                    entryPoint = possibleEntry
-                    return true
-                }
-            })
-        })
+  public findMachineByEntryPoint = (
+    point: THREE.Vector3
+  ): { machine: IMaschineInfo; entry: THREE.Vector3 } | undefined => {
+    let entryPoint = new THREE.Vector3()
+    const machine = this.getMachines().find(({ entrances }) => {
+      return entrances.find((possibleEntry) => {
+        if (pointsOverlapping(possibleEntry, point)) {
+          entryPoint = possibleEntry
+          return true
+        }
+      })
+    })
 
-        if (!machine) return undefined
+    if (!machine) return undefined
 
-        return {machine: machine, entry: entryPoint}
+    return { machine: machine, entry: entryPoint }
+  }
+
+  public findPipeOnMachineExit = (maschine: IMaschineInfo): ICombinedPipe | undefined => {
+    const point = maschine.exits.find((exitPoint) => {
+      return (
+        this.findCombinedPipe(exitPoint, true, this.getAllCombinedPipes()) ||
+        this.findCombinedPipe(exitPoint, false, this.getAllCombinedPipes())
+      )
+    })
+    if (!point) {
+      console.log('no pipe found on point')
+      return undefined
     }
 
-    public findPipeOnMachineExit = (maschine: IMaschineInfo): ICombinedPipe | undefined => {
-        const point = maschine.exits.find((exitPoint) => {
-            return (
-                this.findCombinedPipe(exitPoint, true, this.getAllCombinedPipes()) ||
-                this.findCombinedPipe(exitPoint, false, this.getAllCombinedPipes())
-            )
-        })
-        if (!point) {
-            console.log('no pipe found on point')
-            return undefined
+    const pipe = this.findCombinedPipe(point, true, this.getAllCombinedPipes())
+    const rotated = this.findCombinedPipe(point, false, this.getAllCombinedPipes())
+
+    if (pipe) {
+      return pipe
+    }
+
+    if (rotated) {
+      reverseCombinedPipe(rotated)
+      return rotated
+    }
+  }
+
+  /**
+   * Item Track
+   */
+
+  public getAllItemTracks = (): IItemTrack[] => {
+    let fullTrack: IItemTrack[] = []
+    let newPipe: ICombinedPipe | undefined
+
+    this.getRohstoffannahmeStartPoints().forEach((ausgabePoint) => {
+      const newTrack: IItemTrack = []
+      let ausgangspunkt = ausgabePoint
+      let prevErz: string = 'Eisen'
+      let prevMachine: { machine: IMaschineInfo; entry: THREE.Vector3 } | undefined = undefined
+
+      while (true) {
+
+        // Pipe am ausgangspunkt ?
+        let pipe = this.findCombinedPipe(ausgangspunkt, true, this.getAllCombinedPipes())
+        let rotatedPipe = this.findCombinedPipe(ausgangspunkt, false, this.getAllCombinedPipes())
+
+        // Wenn nicht, dann raus. Nix wird hinzugefügt
+        if (!pipe && !rotatedPipe) {
+          console.log('keine pipe gefunden')
+          break
         }
 
-        const pipe = this.findCombinedPipe(point, true, this.getAllCombinedPipes())
-        const rotated = this.findCombinedPipe(point, false, this.getAllCombinedPipes())
+        // Wenn doch wird die pipe rotiert wenn nötig
+        if (rotatedPipe) {
+          reverseCombinedPipe(rotatedPipe)
+
+          prevMachine = this.findMachineByEntryPoint(
+            this.getPointsFromCombinedPipe(rotatedPipe).endPoint
+          )
+        }
 
         if (pipe) {
-            return pipe
+          prevMachine = this.findMachineByEntryPoint(this.getPointsFromCombinedPipe(pipe).endPoint)
         }
-
-        if (rotated) {
-            reverseCombinedPipe(rotated)
-            return rotated
-        }
-    }
-
-    /**
-     * Item Track
-     */
-
-    public getAllItemTracks = (): IItemTrack[] => {
-        let fullTrack: IItemTrack[] = []
-        let newPipe: ICombinedPipe | undefined
-
-        this.getWarenausgabenStartPoints().forEach((ausgabePoint) => {
-            const newTrack: IItemTrack = []
-            let ausgangspunkt = ausgabePoint
-            let prevErz: string = 'eisen'
-            let prevMachine: { machine: IMaschineInfo; entry: THREE.Vector3 } | undefined = undefined
-
-            while (true) {
-                // Pipe am ausgangspunkt ?
-                let pipe = this.findCombinedPipe(ausgangspunkt, true, this.getAllCombinedPipes())
-                let rotatedPipe = this.findCombinedPipe(ausgangspunkt, false, this.getAllCombinedPipes())
-
-                // Wenn nicht, dann raus. Nix wird hinzugefügt
-                if (!pipe && !rotatedPipe) {
-                    console.log('keine pipe gefunden')
-                    break
-                }
-
-                // Wenn doch wird die pipe rotiert wenn nötig
-                if (rotatedPipe) {
-                    reverseCombinedPipe(rotatedPipe)
-
-                    prevMachine = this.findMachineByEntryPoint(
-                        this.getPointsFromCombinedPipe(rotatedPipe).endPoint
-                    )
-                }
-
-                if (pipe) {
-                    prevMachine = this.findMachineByEntryPoint(this.getPointsFromCombinedPipe(pipe).endPoint)
-                }
 
                 // Maschine gefunden ? Pushen
                 if (prevMachine) {
@@ -460,7 +520,7 @@ export class PlacedEntities {
                     }
                 } else {
                     // Vieleich die warenausgabe
-                    this.getRohstoffannahmeStartPoints().forEach((warenausgabePoint) => {
+                    this.getWarenausgabenStartPoints().forEach((warenausgabePoint) => {
 
                         // Frag nicht...
                         const newErz = prevErz === "holzplanke_planiert" ? "paket_tisch" : "paket_hammer"

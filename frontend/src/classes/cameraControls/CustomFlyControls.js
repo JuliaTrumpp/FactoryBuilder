@@ -3,7 +3,7 @@ import { PointerLockControls } from './CustomPointerLock'
 
 
 class CustomFlyControls {
-  movementSpeed = 0.5
+  movementSpeed = 0.2
   movement = null
   camera = null
   currentMouse = null

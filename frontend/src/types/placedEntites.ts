@@ -32,28 +32,28 @@ export type IMaschineInfo = {
 }
 
 export type IItemProcessed =
-  | 'eisen_barren'
-  | 'eisen_klumpen'
-  | 'eisen_staub'
-  | 'farbeimer_processed'
-  | 'glas'
-  | 'holzplanke'
-  | 'holzplanke_planiert'
-  | 'holzstaebe'
-  | 'kupfer_staub'
-  | 'zinn_staub'
-  | 'paket_hammer'
-  | 'paket_tisch'
+  | 'Eisen_barren'
+  | 'Eisen_klumpen'
+  | 'Eisen_staub'
+  | 'Farbeimer_processed'
+  | 'Glas'
+  | 'Holzplanke'
+  | 'Holzplanke_planiert'
+  | 'Holzstaebe'
+  | 'Kupfer_staub'
+  | 'Zinn_staub'
+  | 'Paket_hammer'
+  | 'Paket_tisch'
 
 export type IItemResource =
-  | 'eisen'
-  | 'farbeimer'
-  | 'holzstaemme'
-  | 'kautschuk'
-  | 'kohle'
-  | 'kupfer'
-  | 'sand'
-  | 'zinn'
+  | 'Eisen'
+  | 'Farbeimer'
+  | 'Holzstaemme'
+  | 'Kautschuk'
+  | 'Kohle'
+  | 'Kupfer'
+  | 'Sand'
+  | 'Zinn'
 
 export type IItem = IItemProcessed | IItemResource
 
