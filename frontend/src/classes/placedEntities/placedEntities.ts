@@ -27,33 +27,30 @@ import { backendUrl } from '@/utils/config/config'
  * Represents the collection of all current entities in the factory
  */
 export class PlacedEntities {
-    private allEntities: IEntity[] = []
-    private sceneRef: THREE.Scene
-    private loader: GLTFLoader
+  private allEntities: IEntity[] = []
+  private sceneRef: THREE.Scene
+  private loader: GLTFLoader
 
-    constructor(sceneRef: THREE.Scene, loader: GLTFLoader) {
-        this.sceneRef = sceneRef
-        this.loader = loader
-    }
+  constructor(sceneRef: THREE.Scene, loader: GLTFLoader) {
+    this.sceneRef = sceneRef
+    this.loader = loader
+  }
 
-    /**
-     * Single Entity Operations
-     */
-    public add = (entity: IEntity) => {
-        this.allEntities.push(entity)
-        if (entity.orientation === 'North') return
-        rotateModelFromXtoY('North', entity.orientation, entity.threejsObject, this, false)
-    }
+  /**
+   * Single Entity Operations
+   */
+  public add = (entity: IEntity) => {
+    this.allEntities.push(entity)
+    if (entity.orientation === 'North') return
+    rotateModelFromXtoY('North', entity.orientation, entity.threejsObject, this, false)
+  }
 
-    public updateLastIdAndInputMaterialAndOutputMaterial = (id: number, inputMaterial: Map<string, string>, outputMaterial: Map<string, string>) => {
-        const lastIndex = this.allEntities.length - 1
-        if (lastIndex >= 0) {
-            this.allEntities[lastIndex].id = id
-            this.allEntities[lastIndex].inputMaterial = inputMaterial
-            this.allEntities[lastIndex].outputMaterial = outputMaterial
-        }
-        console.log(this.allEntities)
+  public updateLastId = (id: number) => {
+    const lastIndex = this.allEntities.length - 1
+    if (lastIndex >= 0) {
+      this.allEntities[lastIndex].id = id
     }
+  }
 
   public pop = () => {
     return this.allEntities.pop()
@@ -308,11 +305,7 @@ export class PlacedEntities {
 
     let out: IPipeInfo[] = []
 
-
-
     this.getAllStraightSinglePipes().forEach((currentPipe) => {
-
-
       const {startPoint, endPoint} = currentPipe;
       let rotatedLeft = this.findSinglePipe(startPoint, true, out)
       let rotatedRight = this.findSinglePipe(endPoint, false, out)
@@ -354,9 +347,9 @@ export class PlacedEntities {
       }
     })
 
-    out.forEach(({startPoint, endPoint}) => {
-      drawLine(startPoint, endPoint, this.sceneRef)
-    })
+    // out.forEach(({startPoint, endPoint}) => {
+    //   drawLine(startPoint, endPoint, this.sceneRef)
+    // })
 
     return out
   }
