@@ -528,7 +528,7 @@ export class PlacedEntities {
                     this.getWarenausgabenStartPoints().forEach((warenausgabePoint) => {
 
                         // Frag nicht...
-                        const newErz: string = this.isWood ? "/models/items/processed/paket_tisch.gltf" : "/models/items/processed/paket_hammer.gltf"
+                        const newErz: string = this.isWood ? "/models/items/products/paket_tisch.gltf" : "/models/items/products/paket_hammer.gltf"
                         if (
                             pipe &&
                             pointsOverlapping(this.getPointsFromCombinedPipe(pipe).endPoint, warenausgabePoint)
