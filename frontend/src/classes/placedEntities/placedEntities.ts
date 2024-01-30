@@ -18,6 +18,9 @@ import { getCenterPoint, rotateModelFromXtoY } from '@/utils/rotation/rotate'
 import { drawLine } from '@/utils/threeJS/helpFunctions'
 import * as THREE from 'three'
 import type { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import {getEntityInFactory} from "@/utils/backend-communication/getRequests";
+import {placeEntity, replaceEntity} from "@/utils/threeJS/entityManipulation";
+import {backendUrl} from "@/utils/config/config";
 
 /**
  * Represents the collection of all current entities in the factory

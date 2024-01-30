@@ -87,7 +87,7 @@ public class EntityRestAPIController {
 
         LOGGER.info("rotate entity: " + String.valueOf(rotateRequestDTO.id()) + " is " + String.valueOf(rotated));
 
-        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, rotateRequestDTO.id(), MessageOperationType.ROTATE), rotateRequestDTO.factoryID());
+        frontendMessageService.sendEvent(new FrontendMessageEvent(MessageEventType.ENTITY, rotateRequestDTO.id(), MessageOperationType.ROTATE), rotateRequestDTO.factoryId());
         return ResponseEntity.ok(rotated);
     }
 
