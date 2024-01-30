@@ -72,5 +72,5 @@ export type IItemTrack = ISingleItemTrack[]
 
 export type ISingleItemTrack = {
   pipe: ICombinedPipe
-  modelId: string
+  modelId: any
 }

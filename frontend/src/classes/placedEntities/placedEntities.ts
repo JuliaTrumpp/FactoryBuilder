@@ -16,7 +16,6 @@ import {
   reverseSinglePipe
 } from '@/utils/placedEntities/placedEntities'
 import { getCenterPoint, rotateModelFromXtoY } from '@/utils/rotation/rotate'
-import { drawLine, drawPoint } from '@/utils/threeJS/helpFunctions'
 import * as THREE from 'three'
 import type { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { getEntityInFactory } from '@/utils/backend-communication/getRequests'
@@ -27,14 +26,16 @@ import { backendUrl } from '@/utils/config/config'
  * Represents the collection of all current entities in the factory
  */
 export class PlacedEntities {
-  private allEntities: IEntity[] = []
-  private sceneRef: THREE.Scene
-  private loader: GLTFLoader
+    private allEntities: IEntity[] = []
+    private sceneRef: THREE.Scene
+    private loader: GLTFLoader
+    private isWood: boolean
 
-  constructor(sceneRef: THREE.Scene, loader: GLTFLoader) {
-    this.sceneRef = sceneRef
-    this.loader = loader
-  }
+    constructor(sceneRef: THREE.Scene, loader: GLTFLoader) {
+        this.sceneRef = sceneRef
+        this.loader = loader
+        this.isWood = false
+    }
 
   /**
    * Single Entity Operations
@@ -45,12 +46,15 @@ export class PlacedEntities {
     rotateModelFromXtoY('North', entity.orientation, entity.threejsObject, this, false)
   }
 
-  public updateLastId = (id: number) => {
-    const lastIndex = this.allEntities.length - 1
-    if (lastIndex >= 0) {
-      this.allEntities[lastIndex].id = id
+    public updateLastIdAndInputMaterialAndOutputMaterial = (id: number, inputMaterial: Map<string, string>, outputMaterial: Map<string, string>) => {
+        const lastIndex = this.allEntities.length - 1
+        if (lastIndex >= 0) {
+            this.allEntities[lastIndex].id = id
+            this.allEntities[lastIndex].inputMaterial = inputMaterial
+            this.allEntities[lastIndex].outputMaterial = outputMaterial
+        }
+        console.log(this.allEntities)
     }
-  }
 
   public pop = () => {
     return this.allEntities.pop()
@@ -416,6 +420,7 @@ export class PlacedEntities {
     point: THREE.Vector3
   ): { machine: IMaschineInfo; entry: THREE.Vector3 } | undefined => {
     let entryPoint = new THREE.Vector3()
+      console.log(this.getMachines())
     const machine = this.getMachines().find(({ entrances }) => {
       return entrances.find((possibleEntry) => {
         if (pointsOverlapping(possibleEntry, point)) {
@@ -466,7 +471,7 @@ export class PlacedEntities {
     this.getRohstoffannahmeStartPoints().forEach((ausgabePoint) => {
       const newTrack: IItemTrack = []
       let ausgangspunkt = ausgabePoint
-      let prevErz: string = 'Eisen'
+      let prevErz: any
       let prevMachine: { machine: IMaschineInfo; entry: THREE.Vector3 } | undefined = undefined
 
       while (true) {
@@ -496,27 +501,34 @@ export class PlacedEntities {
 
                 // Maschine gefunden ? Pushen
                 if (prevMachine) {
-                    prevErz = prevMachine.machine.inputMaterial.entries().next().value
-
+                    prevErz = Object.values(prevMachine.machine.inputMaterial)
+                    if(prevErz.some(string => string.includes("holz"))){
+                        this.isWood = true
+                        prevErz = prevErz[0]
+                    } else if (prevErz.length > 1){
+                        prevErz = prevErz[1]
+                        this.isWood = false
+                    }
                     if (pipe) {
                         newTrack.push({
-                            modelId: prevMachine.machine.inputMaterial.entries().next().value,
+                            modelId: prevErz,
                             pipe: pipe
                         })
                     }
 
                     if (rotatedPipe) {
                         newTrack.push({
-                            modelId: prevMachine.machine.inputMaterial.entries().next().value,
+                            modelId: prevErz,
                             pipe: rotatedPipe
                         })
                     }
+                    console.log(newTrack)
                 } else {
                     // Vieleich die warenausgabe
                     this.getWarenausgabenStartPoints().forEach((warenausgabePoint) => {
 
                         // Frag nicht...
-                        const newErz = prevErz === "holzplanke_planiert" ? "paket_tisch" : "paket_hammer"
+                        const newErz: string = this.isWood ? "/models/items/processed/paket_tisch.gltf" : "/models/items/processed/paket_hammer.gltf"
                         if (
                             pipe &&
                             pointsOverlapping(this.getPointsFromCombinedPipe(pipe).endPoint, warenausgabePoint)

@@ -55,7 +55,7 @@ export class AnimationManager {
     // Beende
     if (currentIndex === track.length) return
 
-    let modelUrl = !this.mockMode ? backendUrl + itemMap.get(track[currentIndex].modelId) : this.mockModelUrl
+    let modelUrl = !this.mockMode ? backendUrl + track[currentIndex].modelId : this.mockModelUrl
 
     this.startAnimateObjectThroughCombinedPipe(
       track[currentIndex].pipe,

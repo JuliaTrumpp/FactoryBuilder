@@ -44,7 +44,7 @@ public class PlaningMachineService implements PlacedModelServiceTemplate {
 
                 Map<String, String> inputMaterials = new HashMap<>();
                 Map<String, String> outputMaterials = new HashMap<>();
-                inputMaterials.put("Holzplanke", "/models/items/resources/holzplanke.gltf");
+                inputMaterials.put("Holzplanke", "/models/items/processed/holzplanke.gltf");
                 outputMaterials.put("Holzplanke_planiert", "/models/items/processed/holzplanke_planiert.gltf");
                 planingMachine.setInputMaterial(inputMaterials);
                 planingMachine.setOutputMaterial(outputMaterials);
