@@ -129,28 +129,31 @@ public class ManipulateAbstractModelService implements PlacedModelServiceTemplat
         long factoryID = factory.getFactoryID();
 
         List<Field> newPosList = new ArrayList<>();
+        List<Field> defaultPosList = new ArrayList<>(thisModel.getPlacedFields());
         List<Field> oldPosList = new ArrayList<>(thisModel.getPlacedFields());
-        Position backupRootPos = createNewPosition(thisModel.getRootPos().getX(), thisModel.getRootPos().getY(), thisModel.getRootPos().getZ());
         final String backupOrientation = thisModel.getOrientation();
         String oldOrientation = thisModel.getOrientation();
         String tmpOrientation = thisModel.getOrientation();
+        // Problem cases if single rotation
+        switch (tmpOrientation) {
+            case "South" -> oldPosList.sort((field1, field2) -> Integer.compare(field2.getPosition().getY(), field1.getPosition().getY()));
+            case "West" -> oldPosList.sort((field1, field2) -> Integer.compare(field2.getPosition().getX(), field1.getPosition().getX()));
+        }
+        Position backupRootPos = oldPosList.get(0).getPosition();
 
-        while (!tmpOrientation.equals(newOrientation)) {
+       while (!tmpOrientation.equals(newOrientation)) {
             tmpOrientation = rotateOrientation(tmpOrientation);
             thisModel.setOrientation(tmpOrientation);
-
+            if (!newPosList.isEmpty()) newPosList.clear();
             try {// adjusting every field where model is placed on
-
-                // remove root position from placedFields list
-                thisModel.getPlacedFields().remove(fieldService.getFieldByPosition(thisModel.getRootPos(), factoryID).orElseThrow());
-
-                // adjust only the root position
-                thisModel.setRootPos(adjustPosition(oldOrientation, tmpOrientation, thisModel.getRootPos(), true, null));
-
-                for (Field f : thisModel.getPlacedFields()) {
+                boolean firstIteration = true;
+                for (Field f : oldPosList) {
                     // new position, so we don't mess up the field position
                     Position position = createNewPosition(f.getPosition().getX(), f.getPosition().getY(), f.getPosition().getZ());
-                    Position pos = adjustPosition(oldOrientation, tmpOrientation, position, false, backupRootPos);
+                    Position pos;
+                    if (firstIteration) pos = adjustPosition(oldOrientation, tmpOrientation, position, true, backupRootPos);
+                    else pos = adjustPosition(oldOrientation, tmpOrientation, position, false, backupRootPos);
+                    firstIteration = false;
                     var fld = fieldService.getFieldByPosition(pos, factoryID);
                     if (fld.isEmpty()) {
                         LOGGER.error("Field (fld) not found");
@@ -160,13 +163,13 @@ public class ManipulateAbstractModelService implements PlacedModelServiceTemplat
                 }
 
                 // add root position back to placedFields list
-                newPosList.add(fieldService.getFieldByPosition(thisModel.getRootPos(), factoryID).orElseThrow());
+                //newPosList.add(fieldService.getFieldByPosition(thisModel.getRootPos(), factoryID).orElseThrow());
 
                 //clear old list and fill with the new data
                 thisModel.getPlacedFields().clear();
                 thisModel.getPlacedFields().addAll(newPosList);
-                newPosList.clear();
-
+                oldPosList.clear();
+                oldPosList.addAll(newPosList);
 
                 for (Input i : thisModel.getInputs()) {
                     // new position, so we don't mess up the field position
@@ -185,7 +188,7 @@ public class ManipulateAbstractModelService implements PlacedModelServiceTemplat
 
 
                 oldOrientation = tmpOrientation;
-                //backupRootPos = createNewPosition(thisModel.getRootPos().getX(), thisModel.getRootPos().getY(), thisModel.getRootPos().getZ());
+                backupRootPos = newPosList.get(0).getPosition();
             } catch (Exception e) {
                 LOGGER.error("An error occurred: " + e);
                 return false;
@@ -199,16 +202,15 @@ public class ManipulateAbstractModelService implements PlacedModelServiceTemplat
 
         try {
             //set field that placedModel used to be on to null
-            for (Field f : oldPosList) {
+            for (Field f : defaultPosList) {
                 if (f.getPlacedModel() != null && f.getPlacedModel().getId() == thisModel.getId())
                     fieldService.deletePlacedModelOnField(f);
             }
 
             //place placedModel on new fields
-            for (Field f : thisModel.getPlacedFields())
+            for (Field f : newPosList)
                 fieldService.setPlacedModelOnField(thisModel, f);
 
-            thisModel.setRootPos(backupRootPos);
         } catch (Exception e) {
             LOGGER.error("Rotating model NOT successfull: " + e);
             return false;
