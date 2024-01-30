@@ -40,7 +40,7 @@ export class AnimationManager {
     this.startAnimateObjectThroughCombinedPipe(
       track[currentIndex].pipe,
       modelUrl, // HIER MOCK MODELS FÜR PERFORMANCE
-      250,
+      4000,
       0,
       () => {
         this.startAnimateObjectThroughTrack(track, currentIndex + 1)
