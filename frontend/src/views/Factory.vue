@@ -2,7 +2,7 @@
 import type {Ref} from 'vue'
 import {onBeforeUnmount, onMounted, onUnmounted, provide, ref, watch} from 'vue'
 import type {IVector3} from '@/types/global'
-import type {IBackendEntity, IBackendEntityPreview, IEntityDelete} from '@/types/backendTypes'
+import type {IBackendEntity, IBackendEntityPreview} from '@/types/backendTypes'
 import * as THREE from 'three'
 import { CameraControlsManager } from '@/classes/cameraControls/CameraControlsManager'
 import { PlacedEntities } from '@/classes/placedEntities/placedEntities'
@@ -25,8 +25,6 @@ import { ManipulationMode } from '@/enum/ManipulationMode'
 
 import {
   createRoom,
-  drawBox,
-  drawLine,
   moveHighlight,
   selectionObject,
   updateHighlightModel
@@ -46,7 +44,7 @@ import {useSessionUser} from '@/utils/composition-functions/useSessionUser'
 import {useError} from '@/utils/composition-functions/useError'
 import ScriptContainer from '@/components/factory-ui/ScriptContainer.vue'
 import StompClientBuilder from '@/classes/messaging/StompClientBuilder'
-import type { ICompass, IEntity } from '@/types/placedEntites'
+import type { ICompass } from '@/types/placedEntites'
 
 /**
  * Config
@@ -278,25 +276,12 @@ const onAnimationStart = (event: any) => {
   animationManager.startAnimation()
 }
 
-const onClearAllClick = (event: any) => {
-  placedEntities.value!!.getAllEntities().forEach((entitie: IEntity) => {
-    entityDeleteRequest({
-      factoryId: factoryID.value,
-      id: entitie.id
-    })
-        .then((success) => {
-          if (success) {
-            placedEntities.value!!.deleteByUUID(entitie.uuid)
-            scene.remove(entitie.threejsObject)
-          }
-        })
-        .catch((error: Error) => {
-          console.error('An error occurred during entity deletion:', error)
-        })
-  })
+const onAnimationStopp = (event: any) => {
+  animationManager.stoppAnimation()
 }
 
-const onDebugClick = (event: any) => {
+const onToggleMockMode = (event: any) => {
+  animationManager.toggleErze()
 }
 
 /**
@@ -716,19 +701,19 @@ const closeScript = () => {
     </button>
 
     <button
-        @click="onClearAllClick"
+        @click="onAnimationStopp"
         id="ignore"
         class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded absolute top-20 left-10 cursor-pointer"
     >
-      ClearAll
+      Stopp Animation
     </button>
 
     <button
-        @click="onDebugClick"
+        @click="onToggleMockMode"
         id="ignore"
-        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded absolute top-0 left-0 cursor-pointer"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded absolute top-30 left-10 cursor-pointer"
     >
-      Debug
+      Toggle Mock Mode
     </button>
 
     <MenuBar

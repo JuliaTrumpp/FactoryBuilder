@@ -305,11 +305,7 @@ export class PlacedEntities {
 
     let out: IPipeInfo[] = []
 
-
-
     this.getAllStraightSinglePipes().forEach((currentPipe) => {
-
-    
       const {startPoint, endPoint} = currentPipe;
       let rotatedLeft = this.findSinglePipe(startPoint, true, out)
       let rotatedRight = this.findSinglePipe(endPoint, false, out)
@@ -351,9 +347,9 @@ export class PlacedEntities {
       }
     })
 
-    out.forEach(({startPoint, endPoint}) => {
-      drawLine(startPoint, endPoint, this.sceneRef)
-    })
+    // out.forEach(({startPoint, endPoint}) => {
+    //   drawLine(startPoint, endPoint, this.sceneRef)
+    // })
 
     return out
   }

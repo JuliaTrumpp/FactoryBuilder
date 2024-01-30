@@ -12,6 +12,8 @@ export class AnimationManager {
   private loaderRef: THREE.Loader
   private mockModelUrl: string =
     'http://localhost:8080/models/mock/items/processed/kupfer_barren.gltf'
+  private animationInterval: any = null // Timer-Referenz
+  private mockMode: boolean = true;
 
   constructor(placedEntitiesRef: PlacedEntities, sceneRef: THREE.Scene, loaderRef: THREE.Loader) {
     this.placedEntitesRef = placedEntitiesRef
@@ -22,12 +24,30 @@ export class AnimationManager {
   // Controlls
 
   startAnimation() {
-    this.placedEntitesRef
-      .getAllItemTracks()
-      .forEach((track) => this.startAnimateObjectThroughTrack(track))
+    // Starte die Animation zuerst
+    this.animationInterval = setInterval(() => {
+      this.placedEntitesRef.getAllItemTracks().forEach((track) => {
+        this.startAnimateObjectThroughTrack(track)
+      })
+    }, 5000) // Alle 10 Sekunden
+
+    // Führe die Animation sofort aus
+    this.placedEntitesRef.getAllItemTracks().forEach((track) => {
+      this.startAnimateObjectThroughTrack(track)
+    })
   }
 
-  stoppAnimation() {}
+  stoppAnimation() {
+    // Stoppe die Animation, indem der Timer gelöscht wird
+    if (this.animationInterval !== null) {
+      clearInterval(this.animationInterval)
+      this.animationInterval = null
+    }
+  }
+
+  toggleErze() {
+    this.mockMode = !this.mockMode
+  }
 
   // Not so Primitive
 
@@ -35,19 +55,18 @@ export class AnimationManager {
     // Beende
     if (currentIndex === track.length) return
 
-    let modelUrl = backendUrl + itemMap.get(track[currentIndex].modelId)
+    let modelUrl = !this.mockMode ? backendUrl + itemMap.get(track[currentIndex].modelId) : this.mockModelUrl
 
     this.startAnimateObjectThroughCombinedPipe(
       track[currentIndex].pipe,
       modelUrl, // HIER MOCK MODELS FÜR PERFORMANCE
-      4000,
+      2000,
       0,
       () => {
         this.startAnimateObjectThroughTrack(track, currentIndex + 1)
       }
     )
   }
-
 
   startAnimateObjectThroughCombinedPipe = (
     pipe: ICombinedPipe,
@@ -72,7 +91,13 @@ export class AnimationManager {
           path,
           duration * section.pipeCount,
           () => {
-            this.startAnimateObjectThroughCombinedPipe(pipe, path, duration, currentIndex + 1, onEnd)
+            this.startAnimateObjectThroughCombinedPipe(
+              pipe,
+              path,
+              duration,
+              currentIndex + 1,
+              onEnd
+            )
           }
         )
         break
@@ -84,14 +109,18 @@ export class AnimationManager {
           duration * section.pipeCount,
           section.orientation,
           () => {
-            this.startAnimateObjectThroughCombinedPipe(pipe, path, duration, currentIndex + 1, onEnd)
+            this.startAnimateObjectThroughCombinedPipe(
+              pipe,
+              path,
+              duration,
+              currentIndex + 1,
+              onEnd
+            )
           }
         )
         break
     }
   }
-
-
 
   // Primitive
 
