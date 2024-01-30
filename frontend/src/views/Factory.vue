@@ -472,6 +472,8 @@ const handleClick = (event: any) => {
       }
       break
     case ManipulationMode.MOVE:
+      replaceEntity(currentObjectSelected.position, currentObjectSelected, lastObjectSelected)
+      manipulationMode.value = ManipulationMode.IDLE
       moveRequest({
         x: currentObjectSelected.position.x,
         y: currentObjectSelected.position.y,
@@ -483,8 +485,6 @@ const handleClick = (event: any) => {
           .then((success: boolean) => {
             if (success) {
               console.log('moved')
-              replaceEntity(currentObjectSelected.position, currentObjectSelected, lastObjectSelected)
-              manipulationMode.value = ManipulationMode.IDLE
             } else {
               console.log('not moved')
               replaceEntity(currObjSelectedOriginPos, currentObjectSelected, currentObjectSelected)
