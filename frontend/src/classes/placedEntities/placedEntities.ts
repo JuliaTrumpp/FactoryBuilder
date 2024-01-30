@@ -1,6 +1,21 @@
-import type { IEntity, ICombinedPipe, IPipeInfo } from '@/types/placedEntites'
-import { turnLeft, turnRight, reverseCombinedPipe, pointsOverlapping, weldPointsOfCombinedPipes } from '@/utils/placedEntities/placedEntities'
-import {getCenterPoint, rotateModelFromXtoY} from '@/utils/rotation/rotate'
+import type {
+  IEntity,
+  ICombinedPipe,
+  IPipeInfo,
+  IMaschineInfo,
+  IItemTrack,
+  IItem
+} from '@/types/placedEntites'
+import { maschineIds, materialMap } from '@/utils/mock/placedEntities'
+import {
+  turnLeft,
+  turnRight,
+  reverseCombinedPipe,
+  pointsOverlapping,
+  weldPointsOfCombinedPipes
+} from '@/utils/placedEntities/placedEntities'
+import { getCenterPoint, rotateModelFromXtoY } from '@/utils/rotation/rotate'
+import { drawLine } from '@/utils/threeJS/helpFunctions'
 import * as THREE from 'three'
 
 /**
@@ -19,8 +34,8 @@ export class PlacedEntities {
    */
   public add = (entity: IEntity) => {
     this.allEntities.push(entity)
-    if (entity.orientation === "North") return
-    rotateModelFromXtoY("North", entity.orientation, entity.threejsObject, this, false)
+    if (entity.orientation === 'North') return
+    rotateModelFromXtoY('North', entity.orientation, entity.threejsObject, this, false)
   }
 
   public updateLastId = (id: number) => {
@@ -29,7 +44,7 @@ export class PlacedEntities {
       this.allEntities[lastIndex].id = id
     }
   }
-  
+
   public pop = () => {
     return this.allEntities.pop()
   }
@@ -57,8 +72,76 @@ export class PlacedEntities {
   public getAllEntities = (): IEntity[] => this.allEntities
 
   /**
+   * Machines
+   */
+  public getMachines = (): IMaschineInfo[] => {
+    return this.allEntities
+      .filter(({ modelId }) => maschineIds.includes(modelId))
+      .map((maschine: IEntity) => {
+        return {
+          modelId: maschine.modelId,
+          inputMaterial: materialMap.get(maschine.modelId)?.inputMaterial || [],
+          outputMaterial: materialMap.get(maschine.modelId)?.outputMaterial || [],
+          entrances: this.getPointsFromMaschine(maschine).entrances,
+          exits: this.getPointsFromMaschine(maschine).exits
+        }
+      })
+  }
+
+  public getWarenausgabenStartPoints = (): THREE.Vector3[] => {
+    const warenausgabeEntities = this.allEntities.filter(
+      ({ modelId }) => modelId === 'Warenausgabe'
+    )
+
+    const exitPipeMeshes = warenausgabeEntities.map((entity) => {
+      return entity.threejsObject.children.find((mesh) => mesh.name.includes('pipe_entrance'))
+    })
+    const validExitPipeMeshes = exitPipeMeshes.filter(
+      (mesh) => mesh !== undefined
+    ) as THREE.Object3D[]
+
+    if (validExitPipeMeshes.length === 0) return []
+
+    return validExitPipeMeshes.map((mesh) => getCenterPoint(mesh as THREE.Object3D))
+  }
+
+  public getRohstoffannahmeStartPoints = (): THREE.Vector3[] => {
+    const warenannahme = this.allEntities.filter(({ modelId }) => modelId === 'Rohstoffannahme')
+
+    const exitPipeMeshes = warenannahme.map((entity) => {
+      return entity.threejsObject.children.find((mesh) => mesh.name.includes('pipe_exit'))
+    })
+    const validExitPipeMeshes = exitPipeMeshes.filter(
+      (mesh) => mesh !== undefined
+    ) as THREE.Object3D[]
+
+    if (validExitPipeMeshes.length === 0) return []
+
+    return validExitPipeMeshes.map((mesh) => getCenterPoint(mesh as THREE.Object3D))
+  }
+
+  /**
    * Get Point
    */
+  public getPointsFromMaschine = (
+    maschine: IEntity
+  ): { entrances: THREE.Vector3[]; exits: THREE.Vector3[] } => {
+    let entrances: THREE.Vector3[] = maschine.threejsObject.children
+      .filter((mesh) => mesh.name.includes('pipe_entrance') || mesh.name.includes('pipe_entrence'))
+      .map((mesh) => getCenterPoint(mesh))
+
+    let exits: THREE.Vector3[] = maschine.threejsObject.children
+      .filter((mesh) => mesh.name.includes('pipe_exit'))
+      .map((mesh) => getCenterPoint(mesh))
+
+    if (!entrances) entrances = []
+    if (!exits) entrances = []
+
+    return {
+      entrances: entrances,
+      exits: exits
+    }
+  }
 
   public getPointsFromSinglePipe = (
     pipe: IEntity
@@ -100,8 +183,6 @@ export class PlacedEntities {
   public getAllCombinedPipes = (): ICombinedPipe[] => {
     const allPipes = [...this.getAllCurvedSinglePipes(), ...this.getAllStraightSinglePipes()]
     let out: ICombinedPipe[] = []
-
-    console.log(allPipes);
 
     // create all
     allPipes.forEach((currentPipe) => {
@@ -155,15 +236,12 @@ export class PlacedEntities {
     return out
   }
 
-
   /**
    * Get Pipes primitive
    */
   public getAllStraightSinglePipes = (): IPipeInfo[] => {
-
-    console.log(this.allEntities)
     return this.allEntities
-      .filter((entity) => entity.modelId === 'roehre')
+      .filter((entity) => entity.modelId === 'Röhre')
       .map((mesh) => {
         return {
           startPoint: this.getPointsFromSinglePipe(mesh).startPoint.clone(),
@@ -177,7 +255,7 @@ export class PlacedEntities {
 
   public getAllCurvedSinglePipes = (): IPipeInfo[] => {
     return this.allEntities
-      .filter((entity) => entity.modelId === 'kurve')
+      .filter((entity) => entity.modelId === 'Kurve')
       .map((mesh) => {
         return {
           startPoint: this.getPointsFromSinglePipe(mesh).startPoint.clone(),
@@ -214,5 +292,154 @@ export class PlacedEntities {
       const targetPoint = isStartPoint ? startPoint : endPoint
       return pointsOverlapping(targetPoint, point)
     })
+  }
+
+  public findMachineByEntryPoint = (
+    point: THREE.Vector3
+  ): { machine: IMaschineInfo; entry: THREE.Vector3 } | undefined => {
+    let entryPoint = new THREE.Vector3()
+    const machine = this.getMachines().find(({ entrances }) => {
+      return entrances.find((possibleEntry) => {
+        drawLine(possibleEntry, possibleEntry, this.sceneRef)
+        if (pointsOverlapping(possibleEntry, point)) {
+          entryPoint = possibleEntry
+          return true
+        }
+      })
+    })
+
+    if (!machine) return undefined
+
+    return { machine: machine, entry: entryPoint }
+  }
+
+  public findPipeOnMachineExit = (maschine: IMaschineInfo): ICombinedPipe | undefined => {
+    const point = maschine.exits.find((exitPoint) => {
+      return (
+        this.findCombinedPipe(exitPoint, true, this.getAllCombinedPipes()) ||
+        this.findCombinedPipe(exitPoint, false, this.getAllCombinedPipes())
+      )
+    })
+    if (!point) {
+      console.log('no pipe found on point')
+      return undefined
+    }
+
+    const pipe = this.findCombinedPipe(point, true, this.getAllCombinedPipes())
+    const rotated = this.findCombinedPipe(point, false, this.getAllCombinedPipes())
+
+    if (pipe) {
+      return pipe
+    }
+
+    if (rotated) {
+      reverseCombinedPipe(rotated)
+      return rotated
+    }
+  }
+
+  /**
+   * Item Track
+   */
+
+  public getAllItemTracks = (): IItemTrack[] => {
+    let fullTrack: IItemTrack[] = []
+    let newPipe: ICombinedPipe | undefined
+
+    this.getWarenausgabenStartPoints().forEach((ausgabePoint) => {
+      const newTrack: IItemTrack = []
+      let ausgangspunkt = ausgabePoint
+      let prevErz: IItem = 'eisen'
+      let prevMachine: { machine: IMaschineInfo; entry: THREE.Vector3 } | undefined = undefined
+
+      while (true) {
+        // Pipe am ausgangspunkt ?
+        let pipe = this.findCombinedPipe(ausgangspunkt, true, this.getAllCombinedPipes())
+        let rotatedPipe = this.findCombinedPipe(ausgangspunkt, false, this.getAllCombinedPipes())
+
+        // Wenn nicht, dann raus. Nix wird hinzugefügt
+        if (!pipe && !rotatedPipe) {
+          console.log('keine pipe gefunden')
+          break
+        }
+
+        // Wenn doch wird die pipe rotiert wenn nötig
+        if (rotatedPipe) {
+          reverseCombinedPipe(rotatedPipe)
+
+          prevMachine = this.findMachineByEntryPoint(
+            this.getPointsFromCombinedPipe(rotatedPipe).endPoint
+          )
+        }
+
+        if (pipe) {
+          prevMachine = this.findMachineByEntryPoint(this.getPointsFromCombinedPipe(pipe).endPoint)
+        }
+
+        // Maschine gefunden ? Pushen
+        if (prevMachine) {
+          prevErz = prevMachine.machine.inputMaterial[0]
+
+          if (pipe) {
+            newTrack.push({
+              modelId: prevMachine.machine.inputMaterial[0],
+              pipe: pipe
+            })
+          }
+
+          if (rotatedPipe) {
+            newTrack.push({
+              modelId: prevMachine.machine.inputMaterial[0],
+              pipe: rotatedPipe
+            })
+          }
+        } else {
+          // Vieleich die warenausgabe
+          this.getRohstoffannahmeStartPoints().forEach((warenausgabePoint) => {
+            
+            // Frag nicht...
+            const newErz = prevErz === "holzplanke_planiert" ? "paket_tisch" : "paket_hammer"
+            if (
+              pipe &&
+              pointsOverlapping(this.getPointsFromCombinedPipe(pipe).endPoint, warenausgabePoint)
+            ) {
+              newTrack.push({
+                modelId: newErz,
+                pipe: pipe
+              })
+            } else if (
+              rotatedPipe &&
+              pointsOverlapping(
+                this.getPointsFromCombinedPipe(rotatedPipe).endPoint,
+                warenausgabePoint
+              )
+            ) {
+              newTrack.push({
+                modelId: newErz,
+                pipe: rotatedPipe
+              })
+            }
+          })
+
+          console.log('keine machine gefunden')
+          break
+        }
+
+        // neuer ausgabepunkt
+        newPipe = this.findPipeOnMachineExit(prevMachine.machine)
+
+        if (newPipe) {
+          console.log('neuer ausgangspunkt')
+          ausgangspunkt = this.getPointsFromCombinedPipe(newPipe).startPoint
+        } else {
+          console.log('break')
+          break
+        }
+      }
+      // Ende
+      fullTrack.push(newTrack)
+    })
+    console.log(fullTrack)
+    return fullTrack
   }
 }

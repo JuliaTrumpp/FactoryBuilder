@@ -37,7 +37,6 @@ onMounted(() => {
   })
   getAllFactories().then((json: IFactory[]) => {
     existing_factories.value = json
-    console.log(json)
   })
 })
 

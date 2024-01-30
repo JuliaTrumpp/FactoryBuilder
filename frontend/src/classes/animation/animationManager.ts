@@ -2,7 +2,9 @@ import { interpolateVector } from '@/utils/animation/animation'
 import { loadEntitie } from '@/utils/threeJS/entityManipulation'
 import * as THREE from 'three'
 import type { PlacedEntities } from '../placedEntities/placedEntities'
-import type { ICombinedPipe, ICompass } from '@/types/placedEntites'
+import type { ICombinedPipe, ICompass, IItemTrack } from '@/types/placedEntites'
+import { itemMap } from '@/utils/mock/placedEntities'
+import { backendUrl } from '@/utils/config/config'
 
 export class AnimationManager {
   private placedEntitesRef: PlacedEntities
@@ -21,20 +23,44 @@ export class AnimationManager {
 
   startAnimation() {
     this.placedEntitesRef
-      .getAllCombinedPipes()
-      .forEach((pipe) => this.startAnimateObjectThroughPipe(pipe, this.mockModelUrl, 500))
+      .getAllItemTracks()
+      .forEach((track) => this.startAnimateObjectThroughTrack(track))
   }
 
   stoppAnimation() {}
 
-  startAnimateObjectThroughPipe = (
+  // Not so Primitive
+
+  startAnimateObjectThroughTrack = (track: IItemTrack, currentIndex: number = 0) => {
+    // Beende
+    if (currentIndex === track.length) return
+
+    let modelUrl = backendUrl + itemMap.get(track[currentIndex].modelId)
+
+    this.startAnimateObjectThroughCombinedPipe(
+      track[currentIndex].pipe,
+      this.mockModelUrl, // HIER MOCK MODELS FÜR PERFORMANCE
+      250,
+      0,
+      () => {
+        this.startAnimateObjectThroughTrack(track, currentIndex + 1)
+      }
+    )
+  }
+
+
+  startAnimateObjectThroughCombinedPipe = (
     pipe: ICombinedPipe,
     path: string,
     duration: number,
-    currentIndex: number = 0
+    currentIndex: number = 0,
+    onEnd: () => void
   ) => {
     // Beende
-    if (currentIndex === pipe.sections.length) return
+    if (currentIndex === pipe.sections.length) {
+      onEnd()
+      return
+    }
 
     const section = pipe.sections[currentIndex]
 
@@ -46,7 +72,7 @@ export class AnimationManager {
           path,
           duration * section.pipeCount,
           () => {
-            this.startAnimateObjectThroughPipe(pipe, path, duration, currentIndex + 1)
+            this.startAnimateObjectThroughCombinedPipe(pipe, path, duration, currentIndex + 1, onEnd)
           }
         )
         break
@@ -58,12 +84,14 @@ export class AnimationManager {
           duration * section.pipeCount,
           section.orientation,
           () => {
-            this.startAnimateObjectThroughPipe(pipe, path, duration, currentIndex + 1)
+            this.startAnimateObjectThroughCombinedPipe(pipe, path, duration, currentIndex + 1, onEnd)
           }
         )
         break
     }
   }
+
+
 
   // Primitive
 

@@ -46,7 +46,7 @@ import {useSessionUser} from '@/utils/composition-functions/useSessionUser'
 import {useError} from '@/utils/composition-functions/useError'
 import ScriptContainer from '@/components/factory-ui/ScriptContainer.vue'
 import StompClientBuilder from '@/classes/messaging/StompClientBuilder'
-import type { IEntity } from '@/types/placedEntites'
+import type { ICompass, IEntity } from '@/types/placedEntites'
 
 /**
  * Config
@@ -80,7 +80,7 @@ let sizes: {
   height: number
   ratio: number
 }
-let originalOrientation = ''
+let originalOrientation: ICompass = 'North'
 let placedEntities: PlacedEntities
 let animationManager: AnimationManager
 /**
@@ -429,7 +429,8 @@ const handleClick = (event: any) => {
   switch (manipulationMode.value) {
     case ManipulationMode.SET:
       if (activeEntity.value && !highlightIsIntersectingWithObjects.value) {
-          placeEntity(
+          
+        placeEntity(
               loader,
               scene,
               highlight.position,
@@ -445,6 +446,7 @@ const handleClick = (event: any) => {
               })
             }
           })
+
         placeRequest({
           x: highlight.position.x,
           y: highlight.position.y,
@@ -582,6 +584,7 @@ onMounted(() => {
       .then((json) => {
         // Alle entittys sind nun zugänglich für uns
         allEntities.value = json
+        
         // Active entity ändern
         activeEntity.value = allEntities.value[0]
       })
@@ -591,6 +594,8 @@ onMounted(() => {
 
   // Load all
   getAllEntitiesInFactory(factoryID.value).then((backendEntitys: IBackendEntity[]) => {
+
+   
     backendEntitys.forEach((backendEntity) => {
       placeEntity(
           loader,

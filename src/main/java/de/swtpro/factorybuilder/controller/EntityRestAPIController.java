@@ -83,9 +83,6 @@ public class EntityRestAPIController {
     public ResponseEntity<Boolean> move(@RequestBody MoveRequestDTO moveRequestDTO) {
         Position pos = new Position(moveRequestDTO.x(), moveRequestDTO.y(), moveRequestDTO.z());
         boolean moved = manipulateAbstractModelService.moveModel(moveRequestDTO.id(), pos);
-
-        //LOGGER.info(moveRequestDTO.toString());
-        //LOGGER.info("move entity: " + String.valueOf(moveRequestDTO.id) + String.valueOf(moved));
         LOGGER.info("Moved: " + moved);
         return ResponseEntity.ok(moved);
     }
