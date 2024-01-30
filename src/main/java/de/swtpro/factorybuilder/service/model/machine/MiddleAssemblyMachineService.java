@@ -45,9 +45,9 @@ public class MiddleAssemblyMachineService implements PlacedModelServiceTemplate 
 
                 Map<String, String> inputMaterials = new HashMap<>();
                 Map<String, String> outputMaterials = new HashMap<>();
-                inputMaterials.put("Holzplanke_planiert", "/models/items/resources/holzplanke_planiert.gltf");
+                inputMaterials.put("Holzplanke_planiert", "/models/items/processed/holzplanke_planiert.gltf");
                 outputMaterials.put("Paket_tisch", "/models/items/processed/paket_tisch.gltf");
-                inputMaterials.put("Eisen_barren", "/models/items/resources/eisen_barren.gltf");
+                inputMaterials.put("Eisen_barren", "/models/items/processed/eisen_barren.gltf");
                 outputMaterials.put("Paket_hammer", "/models/items/processed/paket_hammer.gltf");
                 middleAssemblyMachine.setInputMaterial(inputMaterials);
                 middleAssemblyMachine.setOutputMaterial(outputMaterials);

@@ -42,7 +42,7 @@ public class GrindingMachineService implements PlacedModelServiceTemplate {
 
                 Map<String, String> inputMaterials = new HashMap<>();
                 Map<String, String> outputMaterials = new HashMap<>();
-                inputMaterials.put("Eisen_klumpen", "/models/items/resources/eisen_klumpen.gltf");
+                inputMaterials.put("Eisen_klumpen", "/models/items/processed/eisen_klumpen.gltf");
                 outputMaterials.put("Eisen_barren", "/models/items/processed/eisen_barren.gltf");
                 grindingMachine.setInputMaterial(inputMaterials);
                 grindingMachine.setOutputMaterial(outputMaterials);

@@ -42,7 +42,7 @@ public class FurnaceService implements PlacedModelServiceTemplate {
 
                 Map<String, String> inputMaterials = new HashMap<>();
                 Map<String, String> outputMaterials = new HashMap<>();
-                inputMaterials.put("eisen_klumpen", "/models/items/resources/eisen_klumpen.gltf");
+                inputMaterials.put("eisen_klumpen", "/models/items/processed/eisen_klumpen.gltf");
                 outputMaterials.put("eisen", "/models/items/processed/eisen.gltf");
                 furnace.setInputMaterial(inputMaterials);
                 furnace.setOutputMaterial(outputMaterials);
