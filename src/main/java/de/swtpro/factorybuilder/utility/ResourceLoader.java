@@ -77,7 +77,7 @@ public class ResourceLoader implements CommandLineRunner {
                     Model m = new Model();
                     m.setModelFile(filePath);
                     m.setIcon("/icons/models/" + fileName);
-                    m.setName(getNameByPath(filePath));
+                    m.setName(capitalize(getNameByPath(filePath)));
                     m.setType(modelType);
                     models.add(m);
                 }
@@ -91,5 +91,11 @@ public class ResourceLoader implements CommandLineRunner {
     private String getNameByPath(String path) {
         String[] pathInPartsWithoutSuffix = path.split("\\.")[0].split("/");
         return pathInPartsWithoutSuffix[pathInPartsWithoutSuffix.length - 1];
+    }
+    public String capitalize(String input) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+        return input.substring(0, 1).toUpperCase() + input.substring(1);
     }
 }

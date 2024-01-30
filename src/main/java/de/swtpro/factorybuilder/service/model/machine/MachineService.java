@@ -39,31 +39,31 @@ public class MachineService {
     public AbstractMachine createPlacedModel(Model model, Position rootPosition, long factoryID) {
         try {
             switch (model.getName()) {
-                case "brennerofen" -> {
+                case "Brennerofen" -> {
                     return kilnService.createPlacedModel(rootPosition, factoryID);
                 }
-                case "elektronikmaschine" -> {
+                case "Elektronikmaschine" -> {
                     return electronicsMachineService.createPlacedModel(rootPosition, factoryID);
                 }
-                case "erzreiniger" -> {
+                case "Erzreiniger" -> {
                     return oreCleanerService.createPlacedModel(rootPosition, factoryID);
                 }
-                case "farbsprueher" -> {
+                case "Farbsprueher" -> {
                     return colorSprayerService.createPlacedModel(rootPosition, factoryID);
                 }
-                case "montagemaschine" -> {
+                case "Montagemaschine" -> {
                     return middleAssemblyMachineService.createPlacedModel(rootPosition, factoryID);
                 }
-                case "planiermaschine" -> {
+                case "Planiermaschine" -> {
                     return planingMachineService.createPlacedModel(rootPosition, factoryID);
                 }
-                case "saegemuehle" -> {
+                case "Saegemuehle" -> {
                     return sawmillService.createPlacedModel(rootPosition, factoryID);
                 }
-                case "schleifmaschine" -> {
+                case "Schleifmaschine" -> {
                     return grindingMachineService.createPlacedModel(rootPosition, factoryID);
                 }
-                case "schmelzofen" -> {
+                case "Schmelzofen" -> {
                     return furnaceService.createPlacedModel(rootPosition, factoryID);
                 }
                 default -> throw new IllegalArgumentException("Invalid model name");

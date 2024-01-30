@@ -26,16 +26,16 @@ public class TransportationService{
     public AbstractTransportation createPlacedModel(Model model, Position rootPosition, long factoryID) {
         try {
             switch (model.getName()) {
-                case "kurve" -> {
+                case "Kurve" -> {
                     return curvedPipeService.createPlacedModel(rootPosition, factoryID);
                 }
-                case "roehre" -> {
+                case "Roehre" -> {
                     return straightPipeService.createPlacedModel(rootPosition, factoryID);
                 }
-                case "weiche(3)" -> {
+                case "Weiche(3)" -> {
                     return twoWaySwitchService.createPlacedModel(rootPosition, factoryID);
                 }
-                case "weiche(4)" -> {
+                case "Weiche(4)" -> {
                     return threeWaySwitchService.createPlacedModel(rootPosition, factoryID);
                 }
                 default -> throw new IllegalArgumentException("Invalid model name");

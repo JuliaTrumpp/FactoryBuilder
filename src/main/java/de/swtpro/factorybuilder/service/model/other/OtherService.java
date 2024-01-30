@@ -24,16 +24,16 @@ public class OtherService {
     public AbstractOther createPlacedModel(Model model, Position rootPosition, long factoryID) {
         try {
             switch (model.getName()) {
-                case "warenausgabe" -> {
+                case "Warenausgabe" -> {
                     return goodsIssueService.createPlacedModel(rootPosition, factoryID);
                 }
-                case "saeule" -> {
+                case "Saeule" -> {
                     return pillarService.createPlacedModel(rootPosition, factoryID);
                 }
-                case "schild" -> {
+                case "Schild" -> {
                     return signService.createPlacedModel(rootPosition, factoryID);
                 }
-                case "rohstoffannahme" -> {
+                case "Rohstoffannahme" -> {
                     return rawMaterialIntakeService.createPlacedModel(rootPosition, factoryID);
                 }
                 default -> throw new IllegalArgumentException("Invalid model name");

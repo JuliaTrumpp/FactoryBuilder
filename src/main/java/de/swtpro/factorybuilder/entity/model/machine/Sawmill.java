@@ -8,7 +8,7 @@ import jakarta.persistence.Entity;
 @Entity
 @DiscriminatorValue("Sawmill")
 public class Sawmill extends AbstractMachine {
-    String name = "Sägemühle";
+    String name = "Saegemuehle";
     String modelGltf = "/models/machines/saegemuehle.gltf";
 
     public Sawmill(Factory factory, Position rootPosition) {
