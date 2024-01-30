@@ -3,6 +3,7 @@ package de.swtpro.factorybuilder.entity.model;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import de.swtpro.factorybuilder.entity.*;
 import de.swtpro.factorybuilder.utility.ModelType;
@@ -51,6 +52,10 @@ public abstract class AbstractModel implements Serializable {
     String icon;
     ModelType type;
     private String script;
+    @ElementCollection
+    Map<String, String> inputMaterial;
+    @ElementCollection
+    Map<String, String> outputMaterial;
 
     public AbstractModel(Factory factory, Position rootPos) {
         this.factory = factory;
@@ -194,6 +199,18 @@ public abstract class AbstractModel implements Serializable {
 
     public void setType(ModelType type) {
         this.type = type;
+    }
+    public Map<String, String> getInputMaterial() {
+        return inputMaterial;
+    }
+    public void setInputMaterial(Map<String, String> inputMaterial) {
+        this.inputMaterial = inputMaterial;
+    }
+    public Map<String, String> getOutputMaterial() {
+        return outputMaterial;
+    }
+    public void setOutputMaterial(Map<String, String> outputMaterial) {
+        this.outputMaterial = outputMaterial;
     }
 
 }

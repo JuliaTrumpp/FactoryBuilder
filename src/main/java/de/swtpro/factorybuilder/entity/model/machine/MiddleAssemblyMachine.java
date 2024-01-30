@@ -8,7 +8,7 @@ import jakarta.persistence.Entity;
 @Entity
 @DiscriminatorValue("MiddleAssemblyMachine")
 public class MiddleAssemblyMachine extends AbstractMachine {
-    String name = "Montagemaschine_mittel";
+    String name = "Montagemaschine";
     String modelGltf = "/models/machines/montagemaschine.gltf";
 
     public MiddleAssemblyMachine(Factory factory, Position rootPosition) {
